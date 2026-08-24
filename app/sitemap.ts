@@ -2,6 +2,8 @@ import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/seo/metadata";
 import { SEO_PAGES, getAllSlugs } from "@/lib/seo/pages";
 
+export const dynamic = "force-static";
+
 const HIGH_SLUGS = new Set(
   SEO_PAGES.filter((p) => p.priority === "high" && p.slug).map((p) => p.slug)
 );

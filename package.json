@@ -8,15 +8,10 @@
     "start": "next start",
     "lint": "next lint",
     "test": "tsx --test lib/tax/accuracy.test.ts",
-    "clean": "node -e \"require('fs').rmSync('.next',{recursive:true,force:true})\"",
-    "rebuild": "npm run clean && npm run build",
-    "pages:build": "opennextjs-cloudflare build",
-    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
+    "clean": "node -e \"require('fs').rmSync('.next',{recursive:true,force:true}); require('fs').rmSync('out',{recursive:true,force:true})\"",
+    "rebuild": "npm run clean && npm run build"
   },
   "dependencies": {
-    "@opennextjs/cloudflare": "^1.20.2",
     "next": "^15.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
@@ -26,7 +21,6 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "tsx": "^4.19.0",
-    "typescript": "^5.7.0",
-    "wrangler": "^4.125.0"
+    "typescript": "^5.7.0"
   }
 }
