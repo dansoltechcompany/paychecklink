@@ -55,12 +55,6 @@ export default function Navbar() {
               <span className="lang-chevron" aria-hidden="true">
                 ▾
               </span>
-              <span className="lang-caret" aria-hidden="true">
-                ▾
-              </span>
-              <span className="lang-caret" aria-hidden="true">
-                ▾
-              </span>
             </button>
             {langOpen && (
               <>

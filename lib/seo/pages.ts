@@ -294,7 +294,7 @@ export const SEO_PAGES: SEOPage[] = [
     slug: "",
     title: `Paycheck Calculator ${YEAR} — Salary, Take Home Pay & After Tax`,
     h1: "Paycheck Calculator",
-    description: `Free paycheck calculator for ${YEAR}. Estimate take-home pay after federal (IRS Pub 15-T), state, FICA, and local taxes. Built for all 50 states — start with CA, TX, NY, or FL.`,
+      description: `Free paycheck calculator for ${YEAR}. Estimate take-home pay after federal (IRS Pub 15-T), state, FICA, and local taxes. Built for all 50 US states — start with CA, TX, NY, or FL.`,
     keywords: [
       "paycheck calculator",
       "salary calculator",

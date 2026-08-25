@@ -125,7 +125,8 @@ a:hover {
   border-bottom: 1px solid rgba(255, 255, 255, 0.14);
   width: 100%;
   max-width: 100%;
-  overflow: hidden;
+  /* Must stay visible so the language dropdown isn’t clipped */
+  overflow: visible;
 }
 
 .header-inner {
@@ -308,7 +309,7 @@ a:hover {
   position: absolute;
   top: calc(100% + 0.4rem);
   right: 0;
-  z-index: 45;
+  z-index: 60;
   min-width: 12rem;
   list-style: none;
   background: var(--surface);
@@ -417,18 +418,18 @@ a:hover {
 .hero-band-home .hero {
   padding-top: 1.85rem;
   padding-bottom: 1.85rem;
-  text-align: center;
+  text-align: left;
 }
 
 .hero-band-home .hero-copy {
   max-width: 40rem;
-  margin-inline: auto;
+  margin-inline: 0;
 }
 
 .hero-band-home .hero-copy h1,
 .hero-band-home .hero-copy > p {
   max-width: none;
-  margin-inline: auto;
+  margin-inline: 0;
 }
 
 .calculator-wrap {
@@ -1297,7 +1298,7 @@ a:hover {
   .hero-band-home .hero {
     padding-top: 1.2rem;
     padding-bottom: 1rem;
-    text-align: center;
+    text-align: left;
   }
 
   .calculator-wrap {
