@@ -72,8 +72,11 @@ const CA_SCHEDULE_Z: Bracket[] = [
 
 /**
  * 2026 state income tax configs.
- * Primary source: Tax Foundation, State Income Tax Rates and Brackets 2026
- * (as of Jan 1, 2026) — compiled from state statutes, forms, and instructions.
+ *
+ * Prefer primary sources when they post-date Tax Foundation’s Jan 1, 2026 snapshot:
+ *   GA HB 463 (May 11, 2026) · UT SB 60 (Mar 2026) · SC H.4216 (Mar 30, 2026)
+ *
+ * Secondary: Tax Foundation State Income Tax Rates and Brackets 2026
  * https://taxfoundation.org/data/all/state/state-income-tax-rates-2026/
  *
  * CA / NY keep FTB / IT-201 schedules verified separately (do not regress).
@@ -142,7 +145,12 @@ export const STATE_TAX: Record<StateCode, StateTaxConfig> = {
     standardDeduction: sd(3250, 6500),
   },
   FL: { type: "none" },
-  GA: { type: "flat", rate: 0.0519, standardDeduction: sd(12000, 24000) },
+  GA: {
+    type: "flat",
+    rate: 0.0499,
+    // HB 463 (signed May 11, 2026), retroactive to Jan 1, 2026 — gov.georgia.gov
+    standardDeduction: sd(15000, 30000),
+  },
   HI: {
     type: "progressive",
     brackets: [
@@ -161,7 +169,29 @@ export const STATE_TAX: Record<StateCode, StateTaxConfig> = {
     ],
     standardDeduction: sd(4400, 8800),
   },
-  ID: { type: "flat", rate: 0.053, standardDeduction: sd(16100, 32200) },
+  ID: {
+    // Idaho STC Form 40 (2026): 5.3% after federal SD and $4,811 single / $9,622 joint zero bracket
+    type: "progressive",
+    brackets: [
+      { upTo: 4811, rate: 0.0 },
+      { upTo: Infinity, rate: 0.053 },
+    ],
+    bracketsByStatus: {
+      single: [
+        { upTo: 4811, rate: 0.0 },
+        { upTo: Infinity, rate: 0.053 },
+      ],
+      married: [
+        { upTo: 9622, rate: 0.0 },
+        { upTo: Infinity, rate: 0.053 },
+      ],
+      head: [
+        { upTo: 9622, rate: 0.0 },
+        { upTo: Infinity, rate: 0.053 },
+      ],
+    },
+    standardDeduction: sd(16100, 32200),
+  },
   IL: { type: "flat", rate: 0.0495 },
   IN: { type: "flat", rate: 0.0295 },
   IA: { type: "flat", rate: 0.038, standardDeduction: sd(16100, 32200) },
@@ -345,18 +375,22 @@ export const STATE_TAX: Record<StateCode, StateTaxConfig> = {
     standardDeduction: sd(11200, 22400),
   },
   SC: {
+    // H.4216 / Act 110 (signed Mar 30, 2026) — SCDOR: 1.99% / 5.21%; SCIAD replaces federal SD
     type: "progressive",
     brackets: [
-      { upTo: 3640, rate: 0.0 },
-      { upTo: 18230, rate: 0.03 },
-      { upTo: Infinity, rate: 0.06 },
+      { upTo: 30000, rate: 0.0199 },
+      { upTo: Infinity, rate: 0.0521 },
     ],
-    standardDeduction: sd(8350, 16700),
+    standardDeduction: { single: 15000, married: 30000, head: 22500 },
   },
   SD: { type: "none" },
   TN: { type: "none" },
   TX: { type: "none" },
-  UT: { type: "flat", rate: 0.045 },
+  UT: {
+    // SB 60 (signed Mar 2026), retroactive Jan 1, 2026 — 4.45%; Utah Tax Commission Pub 14
+    type: "flat",
+    rate: 0.0445,
+  },
   VT: {
     type: "progressive",
     brackets: [

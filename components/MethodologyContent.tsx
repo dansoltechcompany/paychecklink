@@ -59,16 +59,18 @@ export default function MethodologyContent() {
             </li>
             <li>
               <strong>State income tax:</strong> 2026 rate tables for all 50
-              states (Tax Foundation compilation of state statutes/forms as of
-              Jan 1, 2026), including standard deductions where the state
-              publishes them. California uses FTB Schedule X/Y/Z, the California
-              standard deduction, and Form 540 personal exemption credits
-              ($153 single/HOH; $306 married) with the official AGI Limitation
-              Worksheet phase-out. New York uses NY brackets plus the NY
-              standard deduction; NYC resident tax uses the progressive IT-201
-              city schedule on NY taxable income when a NYC ZIP is entered.
-              Personal exemption credits outside California are not fully
-              modeled (rates ± standard deduction only).
+              states, cross-checked against Tax Foundation’s Jan 1, 2026
+              compilation and corrected where mid-2026 legislation is
+              retroactive (e.g. Georgia HB 463 → 4.99%; Utah SB 60 → 4.45%;
+              South Carolina H.4216 → 1.99%/5.21% + SCIAD). Standard deductions
+              included where the state publishes them. California uses FTB
+              Schedule X/Y/Z, the California standard deduction, and Form 540
+              personal exemption credits with the AGI Limitation Worksheet
+              phase-out. New York uses NY brackets plus the NY standard
+              deduction; NYC resident tax uses the progressive IT-201 city
+              schedule when a NYC ZIP is entered. Personal exemption credits
+              outside California are not fully modeled (rates ± standard
+              deduction only).
             </li>
             <li>
               <strong>California SDI:</strong> EDD employee rate (1.3% for 2026,
