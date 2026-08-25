@@ -167,6 +167,8 @@ export function calculatePaycheck(input: CalculatorInput): CalculatorResult {
     });
     socialAnnual = fica.socialSecurity;
     otherAnnual = fica.medicare;
+    const medicareBaseAnnual = fica.medicareBase;
+    const additionalMedicareAnnual = fica.additionalMedicare;
 
     if (state === "CA") {
       // SDI applies to CA wages; Section 125 benefits typically reduce SDI wages
@@ -182,8 +184,14 @@ export function calculatePaycheck(input: CalculatorInput): CalculatorResult {
     }
     breakdownAnnual.push(
       { label: "Social Security (6.2%)", amount: socialAnnual },
-      { label: "Medicare (1.45%)", amount: otherAnnual }
+      { label: "Medicare (1.45%)", amount: medicareBaseAnnual }
     );
+    if (additionalMedicareAnnual > 0) {
+      breakdownAnnual.push({
+        label: "Additional Medicare (0.9%)",
+        amount: additionalMedicareAnnual,
+      });
+    }
     if (disabilityAnnual > 0) {
       breakdownAnnual.push({
         label: "CA SDI (1.3%)",
@@ -195,7 +203,10 @@ export function calculatePaycheck(input: CalculatorInput): CalculatorResult {
       "Federal withholding uses IRS Publication 15-T percentage method (W-4 compatible)."
     );
     accuracyNotes.push(
-      "FICA: 401(k) reduces federal income tax only; Section 125 benefits reduce FIT and FICA."
+      "FICA: 401(k) reduces federal income tax only; Section 125 benefits reduce FIT and FICA. Social Security is capped at the annual wage base; Additional Medicare Tax applies above the IRS threshold."
+    );
+    accuracyNotes.push(
+      "Estimates use one work/tax state. Multi-state reciprocity and nonresident withholding are not modeled."
     );
     if (state === "CA") {
       accuracyNotes.push(

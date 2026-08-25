@@ -20,16 +20,16 @@ export function calculateSocialSecurity(ficaWagesAnnual: number): number {
 export function calculateMedicare(
   ficaWagesAnnual: number,
   married = false
-): number {
-  let tax = ficaWagesAnnual * FICA_2026.medicareRate;
+): { base: number; additional: number; total: number } {
+  const base = ficaWagesAnnual * FICA_2026.medicareRate;
   const threshold = married
     ? FICA_2026.additionalMedicareThresholdMarried
     : FICA_2026.additionalMedicareThresholdSingle;
-  if (ficaWagesAnnual > threshold) {
-    tax +=
-      (ficaWagesAnnual - threshold) * FICA_2026.additionalMedicareRate;
-  }
-  return tax;
+  const additional =
+    ficaWagesAnnual > threshold
+      ? (ficaWagesAnnual - threshold) * FICA_2026.additionalMedicareRate
+      : 0;
+  return { base, additional, total: base + additional };
 }
 
 export function calculateFICA(
@@ -38,10 +38,15 @@ export function calculateFICA(
 ): {
   socialSecurity: number;
   medicare: number;
+  medicareBase: number;
+  additionalMedicare: number;
 } {
+  const medicare = calculateMedicare(ficaWagesAnnual, options?.married);
   return {
     socialSecurity: calculateSocialSecurity(ficaWagesAnnual),
-    medicare: calculateMedicare(ficaWagesAnnual, options?.married),
+    medicare: medicare.total,
+    medicareBase: medicare.base,
+    additionalMedicare: medicare.additional,
   };
 }
 

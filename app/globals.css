@@ -281,6 +281,20 @@ a:hover {
   letter-spacing: 0.04em;
 }
 
+.lang-chevron {
+  font-size: 0.65rem;
+  opacity: 0.85;
+  margin-left: 0.1rem;
+}
+
+.lang-wrap .icon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  min-width: 2.75rem;
+  justify-content: center;
+}
+
 .dropdown-backdrop {
   position: fixed;
   inset: 0;

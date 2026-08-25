@@ -23,10 +23,15 @@ describe("FICA", () => {
   });
 
   it("adds Additional Medicare above threshold", () => {
-    const low = calculateFICA(150000).medicare;
-    const high = calculateFICA(250000).medicare;
-    assert.ok(high > low);
-    assert.ok(high > 250000 * 0.0145);
+    const low = calculateFICA(150000);
+    const high = calculateFICA(250000);
+    assert.equal(low.additionalMedicare, 0);
+    assert.ok(high.additionalMedicare > 0);
+    assert.ok(
+      Math.abs(high.additionalMedicare - (250000 - 200000) * 0.009) < 0.01
+    );
+    assert.ok(high.medicare > high.medicareBase);
+    assert.ok(high.medicare > 250000 * 0.0145);
   });
 });
 
@@ -177,6 +182,20 @@ describe("End-to-end US paycheck", () => {
     assert.ok(tx.socialSecurity > 0);
     assert.ok(tx.netPay > 0);
     assert.ok(tx.accuracyNotes.length > 0);
+  });
+  it("shows Additional Medicare as its own line for high earners", () => {
+    const result = calculatePaycheck({
+      country: "US",
+      payType: "salary",
+      grossAmount: 250000 / 26,
+      payFrequency: "biweekly",
+      filingStatus: "single",
+      state: "TX",
+    });
+    assert.ok(
+      result.breakdown.some((b) => b.label === "Additional Medicare (0.9%)")
+    );
+    assert.ok(result.breakdown.some((b) => b.label === "Medicare (1.45%)"));
   });
 });
 

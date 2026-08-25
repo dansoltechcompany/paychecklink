@@ -48,10 +48,19 @@ export default function Navbar() {
               className="icon-btn"
               aria-expanded={langOpen}
               aria-haspopup="listbox"
-              aria-label={t("lang.label")}
+              aria-label={`${t("lang.label")} — ${LOCALES.length} languages`}
               onClick={() => setLangOpen((v) => !v)}
             >
               <span className="lang-code">{locale.toUpperCase()}</span>
+              <span className="lang-chevron" aria-hidden="true">
+                ▾
+              </span>
+              <span className="lang-caret" aria-hidden="true">
+                ▾
+              </span>
+              <span className="lang-caret" aria-hidden="true">
+                ▾
+              </span>
             </button>
             {langOpen && (
               <>
