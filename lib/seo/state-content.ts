@@ -2,6 +2,7 @@ import { calculatePaycheck } from "../calculator";
 import { STATE_TAX } from "../tax/state";
 import type { StateCode } from "../types";
 import { STATE_NAMES } from "../types";
+import { phase1ExtraFaqs, phase1ExtraSections } from "./phase1-content";
 
 const YEAR = 2026;
 
@@ -33,49 +34,49 @@ const STATE_NOTES: Record<StateCode, string> = {
   AK: "Alaska has no state income tax and no state sales tax. Residents still pay federal income tax and FICA on wages.",
   AZ: "Arizona uses a flat state income tax rate. Paychecks are simpler to estimate than in progressive-tax states.",
   AR: "Arkansas has a progressive income tax. Lower earners face smaller rates; higher brackets apply as income rises.",
-  CA: "California has one of the highest progressive state income tax structures in the U.S., with top rates well above 10% for high earners. Local taxes may also apply in some cities.",
+  CA: "California combines progressive FTB income tax (top brackets above 10%), Form 540 exemption credits, and employee SDI at 1.3% with no wage cap — a heavier paycheck stack than most states.",
   CO: "Colorado uses a flat state income tax. Your marginal state rate does not increase as your income rises.",
   CT: "Connecticut uses progressive brackets. Higher earners pay a higher statewide marginal rate than lower-income residents.",
   DE: "Delaware has progressive income tax brackets. There is no state sales tax, which affects overall cost of living more than paycheck withholding.",
   FL: "Florida has no state income tax on wages, which typically increases take-home pay versus high-tax states. Federal and FICA taxes still apply.",
-  GA: "Georgia uses a flat state income tax. Withholding is straightforward once federal filing status is set.",
+  GA: "Georgia’s 2026 flat rate is 4.99% under HB 463 (down from 5.19%), with a $15,000 single / $30,000 joint standard deduction — verify against Georgia DOR, not older aggregator snapshots.",
   HI: "Hawaii has a multi-bracket progressive income tax. Even mid-level wages can land in higher state brackets.",
-  ID: "Idaho uses a flat state income tax. Estimate net pay by applying the flat rate after federal and FICA.",
-  IL: "Illinois uses a flat state income tax. Local taxes are limited compared with some neighboring Midwest states.",
+  ID: "Idaho uses a 5.3% rate after the federal standard deduction and a small zero bracket (Idaho STC Form 40).",
+  IL: "Illinois uses a flat 4.95% state income tax. Local city income taxes are uncommon compared with NY, PA, or OH.",
   IN: "Indiana uses a flat state income tax. Counties may add local income taxes that further reduce take-home pay.",
   IA: "Iowa uses a flat state income tax after recent reforms, simplifying paycheck estimates statewide.",
   KS: "Kansas uses progressive income tax brackets. Your effective state rate rises with taxable income.",
-  KY: "Kentucky uses a flat state income tax. Some localities also levy occupational license taxes.",
-  LA: "Louisiana uses progressive brackets. State withholding combines with federal and FICA on each paycheck.",
+  KY: "Kentucky uses a flat 3.5% state income tax for 2026 (HB 1). Some localities also levy occupational license taxes.",
+  LA: "Louisiana uses a flat 3% state income tax after recent reforms, with a state standard deduction.",
   ME: "Maine has progressive income tax brackets. Higher incomes face a higher statewide marginal rate.",
-  MD: "Maryland uses progressive state brackets, and many counties add a local income tax on top of state tax.",
+  MD: "Maryland uses progressive state brackets, and every resident also pays a mandatory county or Baltimore City local income tax (about 2.25%–3.30% in 2026).",
   MA: "Massachusetts uses a flat state income tax on most wage income, with a surtax possible for very high earners.",
   MI: "Michigan uses a flat state income tax. Some cities (such as Detroit) add local income taxes.",
   MN: "Minnesota has progressive brackets with relatively high top rates compared with many Midwestern states.",
-  MS: "Mississippi uses progressive brackets with a 0% bottom tier, so low taxable income may owe little state tax.",
+  MS: "Mississippi taxes 4% on income above $10,000 (first $10,000 untaxed at the state rate).",
   MO: "Missouri uses progressive brackets. St. Louis and Kansas City may add earnings taxes for city workers.",
   MT: "Montana uses progressive income tax brackets. There is no general statewide sales tax.",
   NE: "Nebraska uses progressive brackets. Effective state tax rises as taxable income moves into higher tiers.",
   NV: "Nevada has no state income tax on wages. Take-home pay is typically higher than in income-tax states after federal and FICA.",
-  NH: "New Hampshire has no wage income tax (interest/dividend rules differ). Most W-2 wages face no state income tax.",
+  NH: "New Hampshire has no wage income tax. Most W-2 wages face no state income tax.",
   NJ: "New Jersey has progressive brackets with high top rates. Property taxes are separate from paycheck withholding.",
   NM: "New Mexico uses progressive income tax brackets. State rates are moderate compared with coastal high-tax states.",
   NY: "New York has progressive state income tax, and New York City residents also face local income tax — a major take-home difference vs upstate.",
-  NC: "North Carolina uses a flat state income tax. Estimates are simpler than multi-bracket states.",
+  NC: "North Carolina uses a flat 3.99% state income tax for 2026 (NCDOR), down from prior years’ phase-down schedule.",
   ND: "North Dakota has progressive brackets with relatively low rates compared with many states.",
-  OH: "Ohio uses progressive brackets, and many cities levy municipal income taxes that reduce take-home pay further.",
+  OH: "Ohio’s 2026 state tax is 0% to $26,050 then 2.75% above; many cities also levy municipal income tax (RITA/city).",
   OK: "Oklahoma uses progressive brackets. State withholding applies on top of federal income tax and FICA.",
   OR: "Oregon has progressive income tax with high top rates and no statewide sales tax — paycheck tax can feel heavier than sales-tax states.",
-  PA: "Pennsylvania uses a flat state income tax. Many municipalities and school districts add local earned income taxes.",
+  PA: "Pennsylvania’s state wage tax is a flat 3.07%; thousands of municipalities/school districts may add local EIT on top (Philly/Pittsburgh sampled).",
   RI: "Rhode Island uses progressive brackets. State rates sit in the mid range for New England.",
-  SC: "South Carolina uses progressive brackets with a 0% bottom tier for low taxable income.",
+  SC: "South Carolina’s 2026 H.4216 structure uses 1.99% then 5.21% (SCIAD replaces the federal standard deduction).",
   SD: "South Dakota has no state income tax on wages. Federal tax and FICA still apply to every paycheck.",
   TN: "Tennessee has no wage income tax. Take-home pay after federal and FICA is typically higher than in taxed states.",
   TX: "Texas has no state income tax on wages — one of the biggest take-home advantages versus high-tax states. Federal and FICA still apply.",
-  UT: "Utah uses a flat state income tax. Withholding is predictable across income levels.",
+  UT: "Utah’s 2026 flat rate is 4.45% under SB 60 (down from 4.50%), retroactive to January 1, 2026.",
   VT: "Vermont uses progressive brackets. Higher earners face higher statewide marginal rates.",
   VA: "Virginia uses progressive brackets. Northern Virginia cost of living is high, but state withholding follows statewide rates.",
-  WA: "Washington has no state wage income tax. High earners may face capital gains rules, but typical W-2 wages skip state income tax.",
+  WA: "Washington has no state wage income tax on typical W-2 pay. High earners may face capital gains excise rules separately — not ordinary paycheck withholding.",
   WV: "West Virginia uses progressive brackets. State rates are moderate for the region.",
   WI: "Wisconsin uses progressive brackets. Higher incomes move into higher state marginal rates.",
   WY: "Wyoming has no state income tax on wages. Federal income tax and FICA remain the primary paycheck deductions.",
@@ -135,6 +136,9 @@ export interface ExamplePay {
 
 export function getStateExamplePays(code: StateCode): ExamplePay[] {
   const salaries = [40000, 60000, 100000];
+  // Phase 1 accuracy: include typical local where mandatory / defaulted
+  const zip =
+    code === "NY" ? "10001" : code === "MD" ? "20814" : undefined;
   return salaries.map((annual) => {
     const result = calculatePaycheck({
       country: "US",
@@ -143,6 +147,7 @@ export function getStateExamplePays(code: StateCode): ExamplePay[] {
       payFrequency: "biweekly",
       filingStatus: "single",
       state: code,
+      zip,
     });
     return {
       label: formatMoney(annual),
@@ -169,7 +174,7 @@ export function buildStateContentSections(code: StateCode): {
     },
     {
       heading: `Example ${s.name} Take-Home Pay`,
-      body: `For a single filer earning $60,000/year in ${s.name}, estimated take-home is about ${formatMoney(mid.netAnnual)} per year (${formatMoney(mid.netBiweekly)} biweekly), with an effective combined tax rate near ${mid.effectiveRate.toFixed(1)}%. Use the calculator above to plug in your exact salary, hourly wage, 401(k), or bonus.`,
+      body: `For a single filer earning $60,000/year in ${s.name}${code === "NY" ? " (NYC ZIP 10001)" : code === "MD" ? " (Montgomery County ZIP 20814)" : ""}, estimated take-home is about ${formatMoney(mid.netAnnual)} per year (${formatMoney(mid.netBiweekly)} biweekly), with an effective combined tax rate near ${mid.effectiveRate.toFixed(1)}%. Use the calculator above to plug in your exact salary, hourly wage, 401(k), or bonus.`,
     },
     {
       heading: `How to Use the ${s.name} PaycheckLink Calculator`,
@@ -190,9 +195,10 @@ export function buildStateContentSections(code: StateCode): {
     {
       heading: `Comparing ${s.name} to Other States`,
       body: s.hasIncomeTax
-        ? `${s.name}'s state tax (${s.rateLabel}) means take-home on the same $60,000 salary will differ from no-tax states like Texas, Florida, Nevada, or Wyoming. Use our state comparison feature to see side-by-side net pay. Workers considering relocation or remote positions in another state can quickly model the paycheck impact. Keep in mind that lower state income tax does not always mean lower overall cost — property taxes, sales taxes, and cost of living also matter.`
-        : `Because ${s.name} has no state income tax, workers keep more gross pay compared with states like California (up to 13.3%), New York (up to 10.9%), or Oregon (up to 9.9%). However, states without income tax may rely more heavily on sales or property taxes to fund services. Use our state-by-state calculator pages to compare net paychecks across multiple states and find the best fit for your financial situation.`,
+        ? `${s.name}'s state tax (${s.rateLabel}) means take-home on the same $60,000 salary will differ from no-tax states like Texas, Florida, Nevada, or Wyoming. Compare with our California, Texas, New York, and Florida calculators for side-by-side context. Keep in mind that lower state income tax does not always mean lower overall cost — property taxes, sales taxes, and cost of living also matter.`
+        : `Because ${s.name} has no state income tax, workers keep more gross pay compared with states like California, New York, or Maryland (state + local). However, states without income tax may rely more heavily on sales or property taxes. Use our state calculators for California, Texas, New York, Florida, and Georgia to compare net paychecks.`,
     },
+    ...phase1ExtraSections(code),
   ];
 }
 
@@ -204,7 +210,7 @@ export function buildStateFaqs(code: StateCode): { question: string; answer: str
   return [
     {
       question: `How much will I take home on a $60,000 salary in ${s.name}?`,
-      answer: `A single filer earning $60,000 in ${s.name} takes home roughly ${formatMoney(mid.netAnnual)} per year, or about ${formatMoney(mid.netBiweekly)} every two weeks, before benefits or local taxes. Adjust the calculator for your filing status and deductions for a tighter estimate.`,
+      answer: `A single filer earning $60,000 in ${s.name}${code === "NY" ? " with a NYC ZIP" : code === "MD" ? " with a typical county local tax" : ""} takes home roughly ${formatMoney(mid.netAnnual)} per year, or about ${formatMoney(mid.netBiweekly)} every two weeks, before benefits${code === "PA" || code === "OH" ? " (add local tax if your city levies it)" : ""}. Adjust the calculator for your filing status and deductions for a tighter estimate.`,
     },
     {
       question: `Does ${s.name} have state income tax?`,
@@ -226,8 +232,9 @@ export function buildStateFaqs(code: StateCode): { question: string; answer: str
     },
     {
       question: `How accurate is this ${s.name} paycheck calculator?`,
-      answer: `It uses current federal brackets, FICA rates, and ${s.name} state tax rules for ${YEAR}. Actual paystubs can differ due to local taxes, benefits, extra withholdings, or employer rounding. Treat results as estimates, not tax advice.`,
+      answer: `It uses current federal brackets, FICA rates, and ${s.name} state tax rules for ${YEAR} from verified sources (state DOR / enacted bills where we have spot-checked). Actual paystubs can differ due to local taxes, benefits, extra withholdings, or employer rounding. Treat results as estimates, not tax advice. See our methodology page.`,
     },
+    ...phase1ExtraFaqs(code),
   ];
 }
 

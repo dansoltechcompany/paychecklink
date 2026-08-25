@@ -17,6 +17,7 @@ import {
   getTopStateScenarios,
   topStateExtraSections,
 } from "./top-content";
+import { PHASE1_STATES } from "./phase1-content";
 import type { PageCategory, PageDefaults, SEOPage } from "./types";
 
 export type { PageCategory, PageDefaults, SEOPage };
@@ -24,7 +25,7 @@ export type { PageCategory, PageDefaults, SEOPage };
 const SITE_NAME = "PaycheckLink";
 const YEAR = 2026;
 
-const TOP_STATES: StateCode[] = ["CA", "TX", "NY", "FL"];
+const TOP_STATES: StateCode[] = [...PHASE1_STATES];
 
 function hubFaqs(): SEOPage["faqs"] {
   return enhanceTopHubFaqs();
@@ -60,8 +61,11 @@ function buildStatePages(): SEOPage[] {
         state: code,
         payFrequency: "biweekly",
         grossAmount: Math.round((60000 / 26) * 100) / 100,
-        // NYC is most of NY paycheck searches — preload Manhattan ZIP
-        ...(code === "NY" ? { zip: "10001" } : {}),
+        ...(code === "NY"
+          ? { zip: "10001" }
+          : code === "MD"
+            ? { zip: "20814" }
+            : {}),
       },
       faqs: buildStateFaqs(code),
       contentSections: [

@@ -241,6 +241,239 @@ export function getTopStateScenarios(state: StateCode): PayScenario[] {
             "Busy OT weeks raise FICA and federal withholding — still no Florida state income tax.",
         }),
       ];
+    case "MD":
+      return [
+        runScenario({
+          state: "MD",
+          annual: 60000,
+          zip: "20814",
+          title: "Montgomery County $60k",
+          setup: "Single · $60,000 · ZIP 20814 (3.20% local)",
+          highlight:
+            "Maryland state tax plus mandatory county local — every resident owes local income tax.",
+        }),
+        runScenario({
+          state: "MD",
+          annual: 95000,
+          zip: "21201",
+          preTax401kPercent: 6,
+          title: "Baltimore City + 401(k)",
+          setup: "Single · $95,000 · Baltimore City ZIP · 6% 401(k)",
+          highlight:
+            "Pre-tax 401(k) reduces Maryland taxable wages that both state and local tax use.",
+        }),
+        runScenario({
+          state: "MD",
+          annual: 140000,
+          filingStatus: "married",
+          zip: "20850",
+          title: "Dual-income MD household",
+          setup: "Married filing jointly · $140,000 · Montgomery ZIP",
+          highlight:
+            "Joint federal brackets help, but MD state + local still stack on each paycheck.",
+        }),
+        runHourlyScenario({
+          state: "MD",
+          hourly: 26,
+          overtime: 5,
+          title: "MD hourly with OT",
+          setup: "$26/hr · 40 hrs + 5 OT",
+          highlight:
+            "OT raises federal, MD state, and (with a ZIP) county local withholding together.",
+        }),
+      ];
+    case "GA":
+      return [
+        runScenario({
+          state: "GA",
+          annual: 60000,
+          title: "Atlanta $60k at 4.99%",
+          setup: "Single · $60,000 · Georgia HB 463 rate",
+          highlight:
+            "2026 flat 4.99% with $15,000 standard deduction — not the old 5.19% / $12k figures.",
+        }),
+        runScenario({
+          state: "GA",
+          annual: 110000,
+          preTax401kPercent: 8,
+          title: "Georgia professional + 401(k)",
+          setup: "Single · $110,000 · 8% traditional 401(k)",
+          highlight:
+            "401(k) lowers Georgia taxable wages after the state standard deduction.",
+        }),
+        runScenario({
+          state: "GA",
+          annual: 160000,
+          filingStatus: "married",
+          title: "Married Georgia household",
+          setup: "Married filing jointly · $160,000 · $30,000 GA SD",
+          highlight:
+            "HB 463 raised the joint standard deduction to $30,000 for 2026.",
+        }),
+        runHourlyScenario({
+          state: "GA",
+          hourly: 24,
+          overtime: 6,
+          title: "Georgia hourly + OT",
+          setup: "$24/hr · 40 hrs + 6 OT",
+          highlight:
+            "Flat 4.99% keeps state withholding proportional when OT spikes gross.",
+        }),
+      ];
+    case "IL":
+      return [
+        runScenario({
+          state: "IL",
+          annual: 60000,
+          title: "Chicago-area $60k flat tax",
+          setup: "Single · $60,000 · Illinois 4.95%",
+          highlight:
+            "Flat 4.95% scales linearly — no progressive state-bracket jump at mid salaries.",
+        }),
+        runScenario({
+          state: "IL",
+          annual: 100000,
+          preTax401kPercent: 7,
+          title: "Illinois $100k with 401(k)",
+          setup: "Single · $100,000 · 7% 401(k)",
+          highlight:
+            "Pre-tax 401(k) cuts federal and Illinois taxable wages on the same paycheck.",
+        }),
+        runScenario({
+          state: "IL",
+          annual: 155000,
+          filingStatus: "married",
+          title: "Illinois dual earners",
+          setup: "Married filing jointly · $155,000",
+          highlight:
+            "Joint federal status helps; Illinois still withholds flat 4.95% on state wages.",
+        }),
+        runHourlyScenario({
+          state: "IL",
+          hourly: 27,
+          overtime: 4,
+          title: "Illinois hourly week",
+          setup: "$27/hr · 40 hrs + 4 OT",
+          highlight:
+            "OT weeks raise FICA and the flat Illinois line together.",
+        }),
+      ];
+    case "PA":
+      return [
+        runScenario({
+          state: "PA",
+          annual: 60000,
+          title: "PA state tax only (no EIT)",
+          setup: "Single · $60,000 · 3.07% state · no local ZIP",
+          highlight:
+            "State flat 3.07% is only part of the story — many towns add EIT separately.",
+        }),
+        runScenario({
+          state: "PA",
+          annual: 75000,
+          zip: "19103",
+          title: "Philadelphia wage tax",
+          setup: "Single · $75,000 · Philly ZIP (city wage tax)",
+          highlight:
+            "Philadelphia city wage tax stacks on Pennsylvania’s 3.07% state tax.",
+        }),
+        runScenario({
+          state: "PA",
+          annual: 120000,
+          zip: "15222",
+          preTax401kPercent: 6,
+          title: "Pittsburgh + 401(k)",
+          setup: "Single · $120,000 · Pittsburgh ZIP · 6% 401(k)",
+          highlight:
+            "Local EIT samples (Pittsburgh) plus state tax — other PA towns need a custom local %.",
+        }),
+        runHourlyScenario({
+          state: "PA",
+          hourly: 25,
+          overtime: 5,
+          title: "PA hourly + OT",
+          setup: "$25/hr · 40 hrs + 5 OT",
+          highlight:
+            "Without a local ZIP this shows PA state tax only — add EIT if your municipality levies it.",
+        }),
+      ];
+    case "OH":
+      return [
+        runScenario({
+          state: "OH",
+          annual: 60000,
+          title: "Ohio state tax (no city)",
+          setup: "Single · $60,000 · OH state only",
+          highlight:
+            "2026 structure: 0% to $26,050 then 2.75% — city tax is extra if your town levies it.",
+        }),
+        runScenario({
+          state: "OH",
+          annual: 80000,
+          zip: "43215",
+          title: "Columbus municipal tax",
+          setup: "Single · $80,000 · Columbus ZIP",
+          highlight:
+            "Columbus municipal income tax stacks on Ohio state withholding.",
+        }),
+        runScenario({
+          state: "OH",
+          annual: 110000,
+          zip: "44113",
+          preTax401kPercent: 5,
+          title: "Cleveland + 401(k)",
+          setup: "Single · $110,000 · Cleveland ZIP · 5% 401(k)",
+          highlight:
+            "RITA/city rates vary — we sample major cities; enter custom % for others.",
+        }),
+        runHourlyScenario({
+          state: "OH",
+          hourly: 23,
+          overtime: 8,
+          title: "Ohio hourly OT week",
+          setup: "$23/hr · 40 hrs + 8 OT",
+          highlight:
+            "OT increases state tax once wages exceed the $26,050 exempt amount.",
+        }),
+      ];
+    case "WA":
+      return [
+        runScenario({
+          state: "WA",
+          annual: 55000,
+          title: "No wage income tax",
+          setup: "Single · $55,000 · Washington",
+          highlight:
+            "No state wage tax — paycheck lines are mainly federal + FICA.",
+        }),
+        runScenario({
+          state: "WA",
+          annual: 100000,
+          preTax401kPercent: 8,
+          title: "Seattle-area $100k + 401(k)",
+          setup: "Single · $100,000 · 8% 401(k)",
+          highlight:
+            "401(k) reduces federal withholding; Washington still adds $0 state income tax.",
+        }),
+        runScenario({
+          state: "WA",
+          annual: 170000,
+          filingStatus: "married",
+          title: "Washington household",
+          setup: "Married filing jointly · $170,000",
+          highlight:
+            "High earners still skip state wage tax; capital gains excise is separate from W-2 withholding.",
+        }),
+        runHourlyScenario({
+          state: "WA",
+          hourly: 29,
+          overtime: 5,
+          title: "Washington hourly + OT",
+          setup: "$29/hr · 40 hrs + 5 OT",
+          highlight:
+            "OT weeks raise federal and FICA only — still no WA state income tax on wages.",
+        }),
+      ];
     default:
       return [];
   }
@@ -254,14 +487,32 @@ export function topStateExtraSections(state: StateCode): SEOPage["contentSection
   const scenarios = getTopStateScenarios(state);
   if (!scenarios.length) return [];
 
-  const name =
-    state === "CA"
-      ? "California"
-      : state === "TX"
-        ? "Texas"
-        : state === "NY"
-          ? "New York"
-          : "Florida";
+  const names: Partial<Record<StateCode, string>> = {
+    CA: "California",
+    TX: "Texas",
+    NY: "New York",
+    FL: "Florida",
+    MD: "Maryland",
+    GA: "Georgia",
+    IL: "Illinois",
+    PA: "Pennsylvania",
+    OH: "Ohio",
+    WA: "Washington",
+  };
+  const name = names[state] ?? state;
+
+  const tips: Partial<Record<StateCode, string>> = {
+    NY: `Use advanced options: set filing status, 401(k), and enter a NYC ZIP (like 10001) if you are a city resident so local tax is included. Compare with our ${name} hourly and take-home pages for different pay types.`,
+    CA: `Open advanced options for W-4 Step 2 (multiple jobs), dependents credit, and 401(k). California’s progressive brackets and SDI mean small salary changes can move your paycheck noticeably.`,
+    TX: `Because ${name} has no state wage income tax, focus on federal W-4 settings, FICA, and pre-tax benefits. Use the hourly calculator if you are paid by the hour or work overtime.`,
+    FL: `Because ${name} has no state wage income tax, focus on federal W-4 settings, FICA, and pre-tax benefits. Compare with Georgia’s 4.99% flat tax if you are weighing a move.`,
+    MD: `Enter your Maryland ZIP so county local tax is correct (Comptroller rates differ). Without a ZIP we default to 3.20%. Pair with 401(k) modeling in advanced options.`,
+    GA: `Confirm the ${YEAR} 4.99% rate and $15,000/$30,000 standard deduction (HB 463). Older articles citing 5.19% are stale.`,
+    IL: `Illinois is a flat 4.95% — filing status mainly changes federal withholding. Use advanced options for 401(k) and dependents credit.`,
+    PA: `Add a Philadelphia/Pittsburgh ZIP or a custom local % for EIT. State 3.07% alone understates many PA paystubs.`,
+    OH: `Add a city ZIP (Columbus, Cleveland, Cincinnati) or custom municipal %. State tax alone misses RITA/city withholding.`,
+    WA: `No state wage tax — prioritize federal W-4 and FICA. Capital gains excise is separate from ordinary paycheck withholding.`,
+  };
 
   return [
     {
@@ -271,11 +522,8 @@ export function topStateExtraSections(state: StateCode): SEOPage["contentSection
     {
       heading: `How to get a closer ${name} estimate`,
       body:
-        state === "NY"
-          ? `Use advanced options: set filing status, 401(k), and enter a NYC ZIP (like 10001) if you are a city resident so local tax is included. Compare with our ${name} hourly and take-home pages for different pay types.`
-          : state === "CA"
-            ? `Open advanced options for W-4 Step 2 (multiple jobs), dependents credit, and 401(k). California’s progressive brackets mean small salary changes can move your state withholding.`
-            : `Because ${name} has no state wage income tax, focus on federal W-4 settings, FICA, and pre-tax benefits. Use the hourly calculator if you are paid by the hour or work overtime.`,
+        tips[state] ??
+        `Use advanced options for W-4 settings, 401(k), and local ZIP when applicable. Compare neighboring state calculators for relocation planning.`,
     },
   ];
 }
