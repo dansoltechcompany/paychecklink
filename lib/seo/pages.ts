@@ -14,18 +14,16 @@ import {
 } from "./state-content";
 import {
   enhanceTopHubFaqs,
-  getTopStateScenarios,
+  getStateScenarios,
   topStateExtraSections,
 } from "./top-content";
-import { PHASE1_STATES } from "./phase1-content";
+import { isPhase1State } from "./phase1-content";
 import type { PageCategory, PageDefaults, SEOPage } from "./types";
 
 export type { PageCategory, PageDefaults, SEOPage };
 
 const SITE_NAME = "PaycheckLink";
 const YEAR = 2026;
-
-const TOP_STATES: StateCode[] = [...PHASE1_STATES];
 
 function hubFaqs(): SEOPage["faqs"] {
   return enhanceTopHubFaqs();
@@ -35,7 +33,8 @@ function buildStatePages(): SEOPage[] {
   return ALL_STATES.map((code) => {
     const s = getStateTaxSummary(code);
     const slug = `${s.name.toLowerCase().replace(/\s+/g, "-")}-paycheck-calculator`;
-    const isTop = TOP_STATES.includes(code);
+    const isPhase1 = isPhase1State(code);
+    const scenarios = getStateScenarios(code);
 
     return {
       slug,
@@ -55,7 +54,7 @@ function buildStatePages(): SEOPage[] {
       ],
       category: "state" as const,
       stateCode: code,
-      priority: isTop ? "high" : "normal",
+      priority: isPhase1 ? "high" : "normal",
       defaults: {
         country: "US",
         state: code,
@@ -70,9 +69,9 @@ function buildStatePages(): SEOPage[] {
       faqs: buildStateFaqs(code),
       contentSections: [
         ...buildStateContentSections(code),
-        ...(isTop ? topStateExtraSections(code) : []),
+        ...topStateExtraSections(code),
       ],
-      scenarios: isTop ? getTopStateScenarios(code) : undefined,
+      scenarios,
     };
   });
 }
@@ -142,7 +141,7 @@ function buildStateVariants(): SEOPage[] {
         ...buildStateContentSections(state).slice(1, 3),
         ...topStateExtraSections(state),
       ],
-      scenarios: getTopStateScenarios(state),
+      scenarios: getStateScenarios(state),
     };
   });
 }

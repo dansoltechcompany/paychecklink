@@ -1,18 +1,13 @@
 import { calculatePaycheck } from "../calculator";
 import type { StateCode } from "../types";
-import type { SEOPage } from "./types";
+import { STATE_NAMES } from "../types";
+import { getPhase2Scenarios } from "./phase2-content";
+import { isPhase1State } from "./phase1-content";
+import type { PayScenario, SEOPage } from "./types";
 
 const YEAR = 2026;
 
-export interface PayScenario {
-  title: string;
-  setup: string;
-  annualGross: number;
-  netAnnual: number;
-  netBiweekly: number;
-  effectiveRate: number;
-  highlight: string;
-}
+export type { PayScenario };
 
 function money(n: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -479,29 +474,22 @@ export function getTopStateScenarios(state: StateCode): PayScenario[] {
   }
 }
 
+/** Phase 1 hand-crafted scenarios, or Phase 2 generated scenarios for all other states */
+export function getStateScenarios(state: StateCode): PayScenario[] {
+  const top = getTopStateScenarios(state);
+  if (top.length) return top;
+  return getPhase2Scenarios(state);
+}
+
 export function formatScenarioBlurb(s: PayScenario): string {
   return `${s.setup}. Estimated take-home about ${money(s.netAnnual)}/year (${money(s.netBiweekly)} biweekly) · effective tax ~${s.effectiveRate.toFixed(1)}%. ${s.highlight}`;
 }
 
-export function topStateExtraSections(state: StateCode): SEOPage["contentSections"] {
-  const scenarios = getTopStateScenarios(state);
-  if (!scenarios.length) return [];
-
-  const names: Partial<Record<StateCode, string>> = {
-    CA: "California",
-    TX: "Texas",
-    NY: "New York",
-    FL: "Florida",
-    MD: "Maryland",
-    GA: "Georgia",
-    IL: "Illinois",
-    PA: "Pennsylvania",
-    OH: "Ohio",
-    WA: "Washington",
-  };
-  const name = names[state] ?? state;
-
-  const tips: Partial<Record<StateCode, string>> = {
+/** Phase 1 “how to get a closer estimate” tips — static rate claims audited for drift */
+export function resolvePhase1StateTips(
+  name: string
+): Partial<Record<StateCode, string>> {
+  return {
     NY: `Use advanced options: set filing status, 401(k), and enter a NYC ZIP (like 10001) if you are a city resident so local tax is included. Compare with our ${name} hourly and take-home pages for different pay types.`,
     CA: `Open advanced options for W-4 Step 2 (multiple jobs), dependents credit, and 401(k). California’s progressive brackets and SDI mean small salary changes can move your paycheck noticeably.`,
     TX: `Because ${name} has no state wage income tax, focus on federal W-4 settings, FICA, and pre-tax benefits. Use the hourly calculator if you are paid by the hour or work overtime.`,
@@ -513,6 +501,19 @@ export function topStateExtraSections(state: StateCode): SEOPage["contentSection
     OH: `Add a city ZIP (Columbus, Cleveland, Cincinnati) or custom municipal %. State tax alone misses RITA/city withholding.`,
     WA: `No state wage tax — prioritize federal W-4 and FICA. Capital gains excise is separate from ordinary paycheck withholding.`,
   };
+}
+
+export function topStateExtraSections(state: StateCode): SEOPage["contentSections"] {
+  const scenarios = getStateScenarios(state);
+  if (!scenarios.length) return [];
+
+  const name = STATE_NAMES[state] ?? state;
+
+  const tips = resolvePhase1StateTips(name);
+
+  const genericTip = isPhase1State(state)
+    ? `Use advanced options for W-4 settings, 401(k), and local ZIP when applicable. Compare neighboring state calculators for relocation planning.`
+    : `Use advanced options for W-4 settings and 401(k). If your city withholds local tax, enter a ZIP or custom local %. Compare with California, Texas, New York, or Florida for take-home context.`;
 
   return [
     {
@@ -521,9 +522,7 @@ export function topStateExtraSections(state: StateCode): SEOPage["contentSection
     },
     {
       heading: `How to get a closer ${name} estimate`,
-      body:
-        tips[state] ??
-        `Use advanced options for W-4 settings, 401(k), and local ZIP when applicable. Compare neighboring state calculators for relocation planning.`,
+      body: tips[state] ?? genericTip,
     },
   ];
 }

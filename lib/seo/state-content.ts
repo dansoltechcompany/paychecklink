@@ -3,6 +3,7 @@ import { STATE_TAX } from "../tax/state";
 import type { StateCode } from "../types";
 import { STATE_NAMES } from "../types";
 import { phase1ExtraFaqs, phase1ExtraSections } from "./phase1-content";
+import { phase2ExtraFaqs, phase2ExtraSections } from "./phase2-content";
 
 const YEAR = 2026;
 
@@ -28,8 +29,8 @@ function formatMoney(n: number): string {
   }).format(n);
 }
 
-/** Unique editorial notes per state — not just name swaps */
-const STATE_NOTES: Record<StateCode, string> = {
+/** Unique editorial notes per state — not just name swaps (static; audited for rate drift) */
+export const STATE_NOTES: Record<StateCode, string> = {
   AL: "Alabama uses a progressive state income tax with relatively low top brackets. Local occupational taxes may also apply in some cities.",
   AK: "Alaska has no state income tax and no state sales tax. Residents still pay federal income tax and FICA on wages.",
   AZ: "Arizona uses a flat state income tax rate. Paychecks are simpler to estimate than in progressive-tax states.",
@@ -199,6 +200,7 @@ export function buildStateContentSections(code: StateCode): {
         : `Because ${s.name} has no state income tax, workers keep more gross pay compared with states like California, New York, or Maryland (state + local). However, states without income tax may rely more heavily on sales or property taxes. Use our state calculators for California, Texas, New York, Florida, and Georgia to compare net paychecks.`,
     },
     ...phase1ExtraSections(code),
+    ...phase2ExtraSections(code),
   ];
 }
 
@@ -235,6 +237,7 @@ export function buildStateFaqs(code: StateCode): { question: string; answer: str
       answer: `It uses current federal brackets, FICA rates, and ${s.name} state tax rules for ${YEAR} from verified sources (state DOR / enacted bills where we have spot-checked). Actual paystubs can differ due to local taxes, benefits, extra withholdings, or employer rounding. Treat results as estimates, not tax advice. See our methodology page.`,
     },
     ...phase1ExtraFaqs(code),
+    ...phase2ExtraFaqs(code),
   ];
 }
 
