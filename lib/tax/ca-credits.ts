@@ -1,22 +1,24 @@
 import type { FilingStatus } from "../types";
 
 /**
- * California Form 540 exemption tax credits (2025 FTB indexed amounts).
- * These are dollar-for-dollar credits against computed CA tax — not deductions.
- * Source: FTB Form 540 / Tax News October 2025 indexing.
+ * California Form 540 exemption tax credits (2025 FTB indexed amounts)
+ * + AGI Limitation Worksheet phase-out from 2025 Form 540 instructions.
+ * Source: https://www.ftb.ca.gov/forms/2025/2025-540-instructions.html
  */
 export const CA_EXEMPTION_CREDITS_2025 = {
-  /** Single, married filing separately, or head of household */
   personalSingleOrHead: 153,
-  /** Married filing jointly / qualifying surviving spouse (2 × personal) */
   personalMarried: 306,
-  /** Per dependent */
   dependent: 475,
-  /**
-   * Federal AGI above which exemption credits begin to phase out (single /
-   * separate / HOH approximation). Full FTB worksheet not modeled.
-   */
-  phaseOutStartApprox: 252203,
+  /** AGI Limitation Worksheet — Form 540 line 32 */
+  phaseOutStart: {
+    single: 252203,
+    married: 504411,
+    head: 378310,
+  } as Record<FilingStatus, number>,
+  /** Divisor for excess AGI (married filing separately would be $1,250; we map MFS→single) */
+  phaseOutStep: 2500,
+  /** Dollar reduction per exemption count per step */
+  phaseOutPerStep: 6,
 } as const;
 
 export function getCaPersonalExemptionCredit(
@@ -27,20 +29,56 @@ export function getCaPersonalExemptionCredit(
     : CA_EXEMPTION_CREDITS_2025.personalSingleOrHead;
 }
 
+/** Number of personal exemption "boxes" on Form 540 lines 7–9 (we model personal only). */
+function personalExemptionCount(filingStatus: FilingStatus): number {
+  return filingStatus === "married" ? 2 : 1;
+}
+
+/**
+ * FTB AGI Limitation Worksheet lines c–e:
+ * excess AGI ÷ $2,500, round up, × $6.
+ */
+export function caPhaseOutReductionPerExemption(
+  annualGross: number,
+  filingStatus: FilingStatus
+): number {
+  const threshold = CA_EXEMPTION_CREDITS_2025.phaseOutStart[filingStatus];
+  const excess = annualGross - threshold;
+  if (excess <= 0) return 0;
+
+  const steps = Math.ceil(excess / CA_EXEMPTION_CREDITS_2025.phaseOutStep);
+  return steps * CA_EXEMPTION_CREDITS_2025.phaseOutPerStep;
+}
+
 export function getCaExemptionCredits(
   filingStatus: FilingStatus,
   dependents = 0,
   annualGross = 0
 ): number {
-  // High-AGI phase-out: skip credits once past the published start threshold.
-  // (Exact FTB reduction worksheet is not modeled.)
-  if (annualGross >= CA_EXEMPTION_CREDITS_2025.phaseOutStartApprox) {
-    return 0;
+  const personalDollars = getCaPersonalExemptionCredit(filingStatus);
+  const depCount = Math.max(0, Math.floor(dependents));
+  const dependentDollars = depCount * CA_EXEMPTION_CREDITS_2025.dependent;
+
+  const perExemptionCut = caPhaseOutReductionPerExemption(
+    annualGross,
+    filingStatus
+  );
+
+  if (perExemptionCut <= 0) {
+    return personalDollars + dependentDollars;
   }
 
-  const personal = getCaPersonalExemptionCredit(filingStatus);
-  const deps = Math.max(0, Math.floor(dependents)) * CA_EXEMPTION_CREDITS_2025.dependent;
-  return personal + deps;
+  // Worksheet: reduce personal boxes and dependent boxes separately
+  const personalReduced = Math.max(
+    0,
+    personalDollars - personalExemptionCount(filingStatus) * perExemptionCut
+  );
+  const dependentReduced = Math.max(
+    0,
+    dependentDollars - depCount * perExemptionCut
+  );
+
+  return personalReduced + dependentReduced;
 }
 
 /** Apply CA exemption credits to computed Schedule X/Y/Z tax. */

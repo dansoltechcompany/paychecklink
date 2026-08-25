@@ -214,7 +214,7 @@ export function calculatePaycheck(input: CalculatorInput): CalculatorResult {
     );
     if (state === "CA") {
       accuracyNotes.push(
-        "California state tax uses FTB Schedule X/Y/Z, the CA standard deduction, and Form 540 personal exemption credits ($153 single/HOH; $306 married)."
+        "California state tax uses FTB Schedule X/Y/Z, the CA standard deduction, and Form 540 personal exemption credits ($153 single/HOH; $306 married), with the official AGI limitation phase-out."
       );
       accuracyNotes.push(
         "CA SDI uses the EDD employee rate (1.3% for 2026, no wage cap). Full EDD DE 4 wage-bracket tables are not modeled."

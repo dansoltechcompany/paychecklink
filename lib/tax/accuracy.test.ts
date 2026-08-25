@@ -10,6 +10,10 @@ import { calculateFICA } from "./fica";
 import { lookupLocalTax } from "./local";
 import { calculateStateTax, getStateTaxableIncome } from "./state";
 import { calculateCaSdi } from "./ca-sdi";
+import {
+  getCaExemptionCredits,
+  caPhaseOutReductionPerExemption,
+} from "./ca-credits";
 import { calculateNycLocalTax, isNycZip } from "./nyc-local";
 
 describe("FICA", () => {
@@ -263,6 +267,29 @@ describe("California accuracy (FTB + EDD)", () => {
     assert.ok(Math.abs(result.medicare - 41.83) < 0.05);
     assert.ok(result.netPay > 0);
     assert.ok(result.netPay < result.grossPay);
+  });
+
+  it("phases out CA exemption credits gradually above AGI threshold", () => {
+    // Just under threshold: full $153
+    assert.equal(getCaExemptionCredits("single", 0, 252203), 153);
+    assert.equal(caPhaseOutReductionPerExemption(252203, "single"), 0);
+
+    // $1 over threshold → ceil(1/2500)=1 step → $6 cut → $147
+    assert.equal(caPhaseOutReductionPerExemption(252204, "single"), 6);
+    assert.equal(getCaExemptionCredits("single", 0, 252204), 147);
+
+    // Exactly one $2,500 step over → still $6
+    assert.equal(getCaExemptionCredits("single", 0, 252203 + 2500), 147);
+
+    // 26 steps × $6 = $156 > $153 → credit floors at $0
+    assert.equal(
+      getCaExemptionCredits("single", 0, 252203 + 2500 * 26),
+      0
+    );
+
+    // Married joint uses higher threshold and 2 personal boxes
+    assert.equal(getCaExemptionCredits("married", 0, 504411), 306);
+    assert.equal(getCaExemptionCredits("married", 0, 504412), 294); // 306 − 2×6
   });
 });
 
