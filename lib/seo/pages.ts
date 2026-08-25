@@ -60,6 +60,8 @@ function buildStatePages(): SEOPage[] {
         state: code,
         payFrequency: "biweekly",
         grossAmount: Math.round((60000 / 26) * 100) / 100,
+        // NYC is most of NY paycheck searches — preload Manhattan ZIP
+        ...(code === "NY" ? { zip: "10001" } : {}),
       },
       faqs: buildStateFaqs(code),
       contentSections: [
@@ -125,6 +127,7 @@ function buildStateVariants(): SEOPage[] {
         payType,
         payFrequency: "biweekly",
         grossAmount: gross,
+        ...(state === "NY" ? { zip: "10001" } : {}),
       },
       faqs: buildStateFaqs(state),
       contentSections: [

@@ -65,12 +65,14 @@ export default function Calculator({ defaults }: Props) {
   const [w4OtherIncome, setW4OtherIncome] = useState(0);
   const [w4Deductions, setW4Deductions] = useState(0);
   const [w4ExtraWithholding, setW4ExtraWithholding] = useState(0);
-  const [zip, setZip] = useState("");
+  const [zip, setZip] = useState(defaults?.zip ?? "");
   const [localTaxRatePct, setLocalTaxRatePct] = useState(0);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const meta = COUNTRIES[country];
   const localHint = zip.length >= 5 ? lookupLocalTax(zip) : null;
+  const isNy = country === "US" && state === "NY";
+
 
   const input: CalculatorInput = useMemo(
     () => ({
@@ -125,6 +127,9 @@ export default function Calculator({ defaults }: Props) {
   );
 
   const result = useMemo(() => calculatePaycheck(input), [input]);
+  const hasNycLocal = result.breakdown.some((b) =>
+    b.label.includes("NYC resident tax")
+  );
 
   function formatMoney(n: number): string {
     try {
@@ -376,6 +381,74 @@ export default function Calculator({ defaults }: Props) {
               </div>
             </div>
 
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="zip">
+                  {isNy ? "ZIP code (NYC / Yonkers local tax)" : "ZIP (local tax)"}
+                </label>
+                <input
+                  id="zip"
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={5}
+                  placeholder={isNy ? "e.g. 10001 (Manhattan)" : "e.g. 10001"}
+                  value={zip}
+                  onChange={(e) =>
+                    setZip(e.target.value.replace(/\D/g, "").slice(0, 5))
+                  }
+                />
+                {localHint && (
+                  <span className="field-hint">
+                    {localHint.name}
+                    {localHint.note ? ` · ${localHint.note}` : ""}
+                    {hasNycLocal
+                      ? " · NYC resident tax applied"
+                      : localHint.rate > 0
+                        ? ` · ${(localHint.rate * 100).toFixed(2)}%`
+                        : ""}
+                  </span>
+                )}
+              </div>
+              <div className="form-group">
+                <label htmlFor="local">Custom local tax %</label>
+                <input
+                  id="local"
+                  type="number"
+                  min="0"
+                  max="15"
+                  step="0.05"
+                  value={localTaxRatePct}
+                  onChange={(e) =>
+                    setLocalTaxRatePct(Number(e.target.value))
+                  }
+                />
+              </div>
+            </div>
+
+            {isNy && (
+              <p className={`local-tax-callout${hasNycLocal ? " is-applied" : ""}`}>
+                {hasNycLocal ? (
+                  <>
+                    NYC resident tax is included for ZIP {zip}. Clear the ZIP to
+                    see NY state tax only (upstate / non-city).
+                  </>
+                ) : (
+                  <>
+                    <strong>NYC residents:</strong> enter a city ZIP (e.g.{" "}
+                    <button
+                      type="button"
+                      className="linkish"
+                      onClick={() => setZip("10001")}
+                    >
+                      10001
+                    </button>
+                    ) — NYC local tax often lowers take-home by about 3–4%.
+                    Without a ZIP, this estimate is NY state tax only.
+                  </>
+                )}
+              </p>
+            )}
+
             <button
               type="button"
               className="advanced-toggle"
@@ -383,7 +456,7 @@ export default function Calculator({ defaults }: Props) {
               aria-expanded={showAdvanced}
             >
               {showAdvanced ? "Hide" : "Show"} advanced accuracy options (W-4,
-              local tax, benefits)
+              benefits)
             </button>
 
             {showAdvanced && (
@@ -490,47 +563,6 @@ export default function Calculator({ defaults }: Props) {
                   </div>
                 </div>
 
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="zip">ZIP (local tax lookup)</label>
-                    <input
-                      id="zip"
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={5}
-                      placeholder="e.g. 10001"
-                      value={zip}
-                      onChange={(e) =>
-                        setZip(e.target.value.replace(/\D/g, "").slice(0, 5))
-                      }
-                    />
-                    {localHint && (
-                      <span className="field-hint">
-                        {localHint.name}
-                        {localHint.rate > 0
-                          ? ` · ${(localHint.rate * 100).toFixed(2)}%`
-                          : localHint.note
-                            ? ` · ${localHint.note}`
-                            : ""}
-                      </span>
-                    )}
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="local">Custom local tax %</label>
-                    <input
-                      id="local"
-                      type="number"
-                      min="0"
-                      max="15"
-                      step="0.05"
-                      value={localTaxRatePct}
-                      onChange={(e) =>
-                        setLocalTaxRatePct(Number(e.target.value))
-                      }
-                    />
-                  </div>
-                </div>
-
                 <label className="check-row">
                   <input
                     type="checkbox"
@@ -547,6 +579,13 @@ export default function Calculator({ defaults }: Props) {
 
       <div className="card card-result">
         <h2>{t("calc.breakdown")}</h2>
+
+        {isNy && !hasNycLocal && (
+          <p className="result-local-tip">
+            This estimate is <strong>NY state tax only</strong>. Enter a NYC ZIP
+            above (e.g. 10001) to include city resident tax.
+          </p>
+        )}
 
         <div className="net-pay-display">
           <div className="label">{t("calc.takeHome")}</div>

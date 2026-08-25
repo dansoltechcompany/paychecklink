@@ -30,6 +30,8 @@ export interface PageDefaults {
   overtimeHours?: number;
   bonusAmount?: number;
   grossAmount?: number;
+  /** Preload ZIP for local tax (e.g. NYC 10001 on New York pages) */
+  zip?: string;
 }
 
 export interface PayScenario {

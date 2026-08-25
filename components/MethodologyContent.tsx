@@ -74,9 +74,11 @@ export default function MethodologyContent() {
               the full EDD DE 4 wage-bracket withholding worksheets.
             </li>
             <li>
-              <strong>Local tax:</strong> ZIP lookup for major cities (NYC,
-              Philadelphia, Detroit, Ohio municipals, etc.) plus custom local
-              rate override.
+              <strong>Local tax:</strong> ZIP lookup is visible in the main
+              calculator (not only under advanced options). New York pages
+              preload ZIP 10001 so NYC resident tax is included by default;
+              clear the ZIP for NY state–only estimates. Other cities (e.g.
+              Philadelphia) use mapped ZIPs or a custom local %.
             </li>
           </ul>
         </section>

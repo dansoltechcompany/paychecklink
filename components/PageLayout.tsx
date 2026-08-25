@@ -83,7 +83,9 @@ export default function PageLayout({ page, related }: Props) {
             {taxSummary && (
               <p className="tax-badge">
                 {taxSummary.hasIncomeTax
-                  ? `${taxSummary.name} state tax: ${taxSummary.rateLabel}`
+                  ? page.stateCode === "NY"
+                    ? `${taxSummary.name} state tax: ${taxSummary.rateLabel} · NYC residents: enter ZIP for city tax`
+                    : `${taxSummary.name} state tax: ${taxSummary.rateLabel}`
                   : `${taxSummary.name}: No income tax`}
               </p>
             )}

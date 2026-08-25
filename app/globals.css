@@ -942,6 +942,49 @@ a:hover {
   letter-spacing: 0.02em;
 }
 
+.local-tax-callout {
+  margin: 0 0 0.85rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--border));
+  background: var(--primary-soft);
+  color: var(--text);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.local-tax-callout.is-applied {
+  border-color: color-mix(in srgb, #0a7a3e 40%, var(--border));
+  background: color-mix(in srgb, #0a7a3e 10%, var(--surface));
+}
+
+.local-tax-callout .linkish {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--primary);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.result-local-tip {
+  margin: 0 0 0.85rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: 8px;
+  background: var(--surface-2);
+  border: 1px dashed var(--border);
+  font-size: 0.84rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.result-local-tip strong {
+  color: var(--text);
+}
+
 .example-table-wrap {
   overflow-x: auto;
   margin-top: 1rem;
