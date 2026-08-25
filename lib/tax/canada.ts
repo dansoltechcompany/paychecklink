@@ -1,5 +1,18 @@
 import type { ProvinceCode } from "../types";
 
+/**
+ * Canada federal + provincial estimates — tax year 2026.
+ * Sources (primary):
+ *   CRA T4032 payroll tables (Jan 2026) — federal brackets, BPA, CPP, EI
+ *   CRA / KPMG 2026 provincial brackets (ON, QC, BC, AB updated; others indexed approx)
+ *
+ * Simplifications (documented in calculator accuracy notes):
+ *   - BPA applied as a taxable-income deduction (real system is a non-refundable credit)
+ *   - No Ontario surtax / health premium
+ *   - No CPP2 above YMPE
+ *   - QPIP omitted for Quebec
+ */
+
 function progressive(
   income: number,
   brackets: { upTo: number; rate: number }[]
@@ -16,20 +29,20 @@ function progressive(
   return tax;
 }
 
-/** Federal brackets (approx) + basic personal amount simplification */
+/** Federal brackets 2026 (lowest rate 14%) — CRA T4032 */
 const FEDERAL_BRACKETS = [
-  { upTo: 57375, rate: 0.15 },
-  { upTo: 114750, rate: 0.205 },
-  { upTo: 177882, rate: 0.26 },
-  { upTo: 253414, rate: 0.29 },
+  { upTo: 58523, rate: 0.14 },
+  { upTo: 117045, rate: 0.205 },
+  { upTo: 181440, rate: 0.26 },
+  { upTo: 258482, rate: 0.29 },
   { upTo: Infinity, rate: 0.33 },
 ];
 
-const BASIC_PERSONAL_AMOUNT = 15705;
+/** Enhanced federal BPA for typical earners (CRA 2026 maximum) */
+const BASIC_PERSONAL_AMOUNT = 16452;
 
-/** Simplified progressive provincial rates for estimates */
+/** Progressive provincial rates — 2026 where sourced; others carried/indexed approx */
 const PROVINCIAL: Record<ProvinceCode, { upTo: number; rate: number }[]> = {
-  // Alberta moved from flat 10% to progressive brackets
   AB: [
     { upTo: 60000, rate: 0.08 },
     { upTo: 151234, rate: 0.1 },
@@ -39,11 +52,11 @@ const PROVINCIAL: Record<ProvinceCode, { upTo: number; rate: number }[]> = {
     { upTo: Infinity, rate: 0.15 },
   ],
   BC: [
-    { upTo: 47937, rate: 0.0506 },
-    { upTo: 95875, rate: 0.077 },
-    { upTo: 110076, rate: 0.105 },
-    { upTo: 133664, rate: 0.1229 },
-    { upTo: 181232, rate: 0.147 },
+    { upTo: 49279, rate: 0.0506 },
+    { upTo: 98558, rate: 0.077 },
+    { upTo: 113158, rate: 0.105 },
+    { upTo: 137407, rate: 0.1229 },
+    { upTo: 186306, rate: 0.147 },
     { upTo: Infinity, rate: 0.168 },
   ],
   MB: [
@@ -52,15 +65,15 @@ const PROVINCIAL: Record<ProvinceCode, { upTo: number; rate: number }[]> = {
     { upTo: Infinity, rate: 0.174 },
   ],
   NB: [
-    { upTo: 49958, rate: 0.094 },
-    { upTo: 99916, rate: 0.14 },
-    { upTo: 185064, rate: 0.16 },
+    { upTo: 51306, rate: 0.094 },
+    { upTo: 102614, rate: 0.14 },
+    { upTo: 190060, rate: 0.16 },
     { upTo: Infinity, rate: 0.195 },
   ],
   NL: [
-    { upTo: 43198, rate: 0.087 },
-    { upTo: 86395, rate: 0.145 },
-    { upTo: 154244, rate: 0.158 },
+    { upTo: 44384, rate: 0.087 },
+    { upTo: 88765, rate: 0.145 },
+    { upTo: 158502, rate: 0.158 },
     { upTo: Infinity, rate: 0.208 },
   ],
   NS: [
@@ -71,44 +84,44 @@ const PROVINCIAL: Record<ProvinceCode, { upTo: number; rate: number }[]> = {
     { upTo: Infinity, rate: 0.21 },
   ],
   NT: [
-    { upTo: 50597, rate: 0.059 },
-    { upTo: 101198, rate: 0.086 },
-    { upTo: 164525, rate: 0.122 },
+    { upTo: 51964, rate: 0.059 },
+    { upTo: 103930, rate: 0.086 },
+    { upTo: 168967, rate: 0.122 },
     { upTo: Infinity, rate: 0.1405 },
   ],
   NU: [
-    { upTo: 53268, rate: 0.04 },
-    { upTo: 106537, rate: 0.07 },
-    { upTo: 173205, rate: 0.09 },
+    { upTo: 54708, rate: 0.04 },
+    { upTo: 109413, rate: 0.07 },
+    { upTo: 177882, rate: 0.09 },
     { upTo: Infinity, rate: 0.115 },
   ],
   ON: [
-    { upTo: 51446, rate: 0.0505 },
-    { upTo: 102894, rate: 0.0915 },
+    { upTo: 53891, rate: 0.0505 },
+    { upTo: 107785, rate: 0.0915 },
     { upTo: 150000, rate: 0.1116 },
     { upTo: 220000, rate: 0.1216 },
     { upTo: Infinity, rate: 0.1316 },
   ],
   PE: [
-    { upTo: 32656, rate: 0.0965 },
-    { upTo: 64313, rate: 0.1363 },
+    { upTo: 33328, rate: 0.0965 },
+    { upTo: 65656, rate: 0.1363 },
     { upTo: Infinity, rate: 0.1665 },
   ],
   QC: [
-    { upTo: 51780, rate: 0.14 },
-    { upTo: 103545, rate: 0.19 },
-    { upTo: 126000, rate: 0.24 },
+    { upTo: 54345, rate: 0.14 },
+    { upTo: 108680, rate: 0.19 },
+    { upTo: 132245, rate: 0.24 },
     { upTo: Infinity, rate: 0.2575 },
   ],
   SK: [
-    { upTo: 52057, rate: 0.105 },
-    { upTo: 148734, rate: 0.125 },
+    { upTo: 53463, rate: 0.105 },
+    { upTo: 152750, rate: 0.125 },
     { upTo: Infinity, rate: 0.145 },
   ],
   YT: [
-    { upTo: 57375, rate: 0.064 },
-    { upTo: 114750, rate: 0.09 },
-    { upTo: 177882, rate: 0.109 },
+    { upTo: 58523, rate: 0.064 },
+    { upTo: 117045, rate: 0.09 },
+    { upTo: 181440, rate: 0.109 },
     { upTo: 500000, rate: 0.128 },
     { upTo: Infinity, rate: 0.15 },
   ],
@@ -128,18 +141,22 @@ export function calculateCanadaTax(
 
   const provincialTax = progressive(taxable, PROVINCIAL[province]);
 
-  // CPP / QPP + EI employee (simplified 2026-ish)
-  // Quebec uses QPP (higher rate) and a lower EI rate; QPIP omitted for simplicity
+  // CPP / QPP + EI employee (2026 CRA)
   const isQuebec = province === "QC";
-  const pensionMax = 68500;
+  const pensionMax = 74600;
   const pensionExempt = 3500;
   const pensionRate = isQuebec ? 0.064 : 0.0595;
-  const cpp = Math.min(
-    Math.max(0, annualGross - pensionExempt),
-    pensionMax - pensionExempt
-  ) * pensionRate;
-  const eiRate = isQuebec ? 0.0131 : 0.0166;
-  const ei = Math.min(annualGross, 65700) * eiRate;
+  const cpp =
+    Math.min(
+      Math.max(0, annualGross - pensionExempt),
+      pensionMax - pensionExempt
+    ) * pensionRate;
+  const eiRate = isQuebec ? 0.013 : 0.0163;
+  const eiMax = 68900;
+  const ei = Math.min(annualGross, eiMax) * eiRate;
 
   return { federalTax, provincialTax, cpp, ei };
 }
+
+export const CANADA_TAX_SOURCE =
+  "CRA T4032 Jan 2026 (federal/CPP/EI) + 2026 provincial brackets (ON/QC/BC primary; others approx)";

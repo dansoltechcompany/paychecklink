@@ -298,8 +298,8 @@ export function calculatePaycheck(input: CalculatorInput): CalculatorResult {
     ];
     accuracyNotes.push(
       province === "QC"
-        ? "Canada (Quebec) estimates use federal + Quebec provincial tax with QPP and Quebec EI rates. QPIP omitted."
-        : "Canada estimates use federal + provincial brackets with CPP/EI employee contributions."
+        ? "Canada (Quebec) estimates use federal + Quebec provincial tax with QPP and Quebec EI rates (2026 CRA). QPIP and Ontario-style surtax omitted."
+        : "Canada estimates use 2026 CRA federal brackets + provincial rates with CPP/EI employee contributions. BPA simplified as a deduction; provincial surtaxes/health premiums omitted."
     );
   } else {
     const intl = calculateInternationalTax(country, fitWagesAnnual);
