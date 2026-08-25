@@ -1,4 +1,5 @@
 import type { FilingStatus, StateCode } from "../types";
+import { applyCaExemptionCredits } from "./ca-credits";
 
 type Bracket = { upTo: number; rate: number };
 
@@ -162,7 +163,8 @@ export function calculateStateTax(
   annualGross: number,
   state: StateCode,
   filingStatus: FilingStatus,
-  preTaxDeductions = 0
+  preTaxDeductions = 0,
+  dependents = 0
 ): number {
   const taxable = getStateTaxableIncome(
     annualGross,
@@ -177,7 +179,16 @@ export function calculateStateTax(
 
   const brackets =
     config.bracketsByStatus?.[filingStatus] ?? config.brackets;
-  return calcProgressive(taxable, brackets);
+  const tax = calcProgressive(taxable, brackets);
+
+  if (state === "CA") {
+    return applyCaExemptionCredits(tax, filingStatus, {
+      dependents,
+      annualGross: Math.max(0, annualGross - preTaxDeductions),
+    });
+  }
+
+  return tax;
 }
 
 /** Taxable income after state standard deduction (if configured). */

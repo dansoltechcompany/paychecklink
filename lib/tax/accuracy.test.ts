@@ -221,10 +221,23 @@ describe("End-to-end US paycheck", () => {
 });
 
 describe("California accuracy (FTB + EDD)", () => {
-  it("applies FTB Schedule X + CA standard deduction on $75k single", () => {
+  it("applies FTB Schedule X + std deduction + personal exemption credit on $75k single", () => {
     const annual = calculateStateTax(75000, "CA", "single", 0);
-    // Taxable $69,294 → Schedule X 8% bracket: $1,987.41 + 8% × $11,752 = $2,927.57
-    assert.ok(Math.abs(annual - 2927.57) < 0.5);
+    // Taxable $69,294 → Schedule X ≈ $2,927.57 − $153 personal credit = $2,774.57
+    assert.ok(Math.abs(annual - 2774.57) < 0.5);
+  });
+
+  it("matches $60k single CA biweekly state tax after exemption credit", () => {
+    // Taxable $54,294 → $1,792.53 − $153 = $1,639.53 / 26 ≈ $63.06
+    const result = calculatePaycheck({
+      country: "US",
+      payType: "salary",
+      grossAmount: 60000 / 26,
+      payFrequency: "biweekly",
+      filingStatus: "single",
+      state: "CA",
+    });
+    assert.ok(Math.abs(result.stateTax - 63.06) < 0.1);
   });
 
   it("withholds CA SDI at 1.3% with no wage cap", () => {
@@ -232,7 +245,7 @@ describe("California accuracy (FTB + EDD)", () => {
     assert.equal(calculateCaSdi(200000), 2600);
   });
 
-  it("$75k single CA biweekly includes SDI and lower CA tax than pre-fix", () => {
+  it("$75k single CA biweekly includes SDI and CA credit", () => {
     const result = calculatePaycheck({
       country: "US",
       payType: "salary",
@@ -244,9 +257,8 @@ describe("California accuracy (FTB + EDD)", () => {
     // SDI: $975 / 26 ≈ $37.50
     assert.ok(Math.abs(result.stateDisability - 37.5) < 0.05);
     assert.ok(result.breakdown.some((b) => b.label === "CA SDI (1.3%)"));
-    // CA state tax ≈ $2,927.57 / 26 ≈ $112.60
-    assert.ok(Math.abs(result.stateTax - 112.6) < 0.5);
-    // FICA still present
+    // CA state tax ≈ $2,774.57 / 26 ≈ $106.71
+    assert.ok(Math.abs(result.stateTax - 106.71) < 0.5);
     assert.ok(Math.abs(result.socialSecurity - 178.85) < 0.05);
     assert.ok(Math.abs(result.medicare - 41.83) < 0.05);
     assert.ok(result.netPay > 0);

@@ -59,7 +59,17 @@ export default function MethodologyContent() {
             </li>
             <li>
               <strong>State income tax:</strong> current state rate tables (flat
-              or progressive) for all 50 states.
+              or progressive) for all 50 states. California uses FTB Schedule
+              X/Y/Z, the California standard deduction, and Form 540 personal
+              exemption credits ($153 single/HOH; $306 married). New York uses
+              NY brackets plus the NY standard deduction; NYC resident tax uses
+              the progressive IT-201 city schedule on NY taxable income when a
+              NYC ZIP is entered.
+            </li>
+            <li>
+              <strong>California SDI:</strong> EDD employee rate (1.3% for 2026,
+              no wage cap). We estimate Form 540–style tax after credits, not
+              the full EDD DE 4 wage-bracket withholding worksheets.
             </li>
             <li>
               <strong>Local tax:</strong> ZIP lookup for major cities (NYC,
@@ -158,7 +168,15 @@ export default function MethodologyContent() {
           <h2>Why results can still differ from your payslip</h2>
           <ul className="methodology-list">
             <li>Employer-specific benefits, garnishments, or rounding</li>
-            <li>State withholding formulas that differ slightly from liability brackets</li>
+            <li>
+              State withholding formulas (e.g. CA DE 4 tables) that differ
+              slightly from Form 540 liability after exemption credits
+            </li>
+            <li>
+              California high-AGI exemption credit phase-out worksheet (we zero
+              credits above the published start threshold; exact FTB reduction
+              not modeled)
+            </li>
             <li>Local taxes not in our ZIP map (enter a custom %)</li>
             <li>Mid-year law changes before our annual update</li>
           </ul>
