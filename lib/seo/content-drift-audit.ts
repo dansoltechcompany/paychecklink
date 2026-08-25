@@ -23,6 +23,7 @@ import { PHASE1_STATES, phase1ExtraFaqs, phase1ExtraSections } from "./phase1-co
 import { localCaveat } from "./phase2-content";
 import { SEO_PAGES } from "./pages";
 import { STATE_NOTES } from "./state-content";
+import { collectStateDepthStaticBlobs } from "./state-depth-content";
 import { getTopStateScenarios, resolvePhase1StateTips } from "./top-content";
 
 export type ProseBlob = {
@@ -129,6 +130,10 @@ export function collectStaticProseBlobs(): ProseBlob[] {
   for (const code of ALL_STATES) {
     const caveat = localCaveat(code);
     if (caveat) blobs.push({ id: `phase2-caveat:${code}`, text: caveat });
+  }
+
+  for (const blob of collectStateDepthStaticBlobs()) {
+    blobs.push(blob);
   }
 
   // Hub / frequency / pay-type illustrative copy only (not state or state-variant pages).

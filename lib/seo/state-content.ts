@@ -4,6 +4,10 @@ import type { StateCode } from "../types";
 import { STATE_NAMES } from "../types";
 import { phase1ExtraFaqs, phase1ExtraSections } from "./phase1-content";
 import { phase2ExtraFaqs, phase2ExtraSections } from "./phase2-content";
+import {
+  stateDepthExtraFaqs,
+  stateDepthExtraSections,
+} from "./state-depth-content";
 
 const YEAR = 2026;
 
@@ -201,6 +205,7 @@ export function buildStateContentSections(code: StateCode): {
     },
     ...phase1ExtraSections(code),
     ...phase2ExtraSections(code),
+    ...stateDepthExtraSections(code),
   ];
 }
 
@@ -238,6 +243,7 @@ export function buildStateFaqs(code: StateCode): { question: string; answer: str
     },
     ...phase1ExtraFaqs(code),
     ...phase2ExtraFaqs(code),
+    ...stateDepthExtraFaqs(code),
   ];
 }
 
