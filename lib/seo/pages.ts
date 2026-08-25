@@ -10,6 +10,7 @@ import { buildInternationalPages } from "./international-pages";
 import {
   buildStateContentSections,
   buildStateFaqs,
+  getCompareStateLinks,
   getStateTaxSummary,
 } from "./state-content";
 import {
@@ -83,26 +84,128 @@ function buildStatePages(): SEOPage[] {
 }
 
 function buildStateVariants(): SEOPage[] {
-  const variants: { state: StateCode; type: string; suffix: string; titleSuffix: string }[] = [
-    { state: "CA", type: "salary", suffix: "salary-calculator", titleSuffix: "Salary Calculator" },
-    { state: "TX", type: "salary", suffix: "salary-calculator", titleSuffix: "Salary Calculator" },
-    { state: "NY", type: "salary", suffix: "salary-calculator", titleSuffix: "Salary Calculator" },
-    { state: "FL", type: "salary", suffix: "salary-calculator", titleSuffix: "Salary Calculator" },
-    { state: "CA", type: "takehome", suffix: "take-home-pay-calculator", titleSuffix: "Take Home Pay Calculator" },
-    { state: "TX", type: "takehome", suffix: "take-home-pay-calculator", titleSuffix: "Take Home Pay Calculator" },
-    { state: "NY", type: "takehome", suffix: "take-home-pay-calculator", titleSuffix: "Take Home Pay Calculator" },
-    { state: "FL", type: "takehome", suffix: "take-home-pay-calculator", titleSuffix: "Take Home Pay Calculator" },
-    { state: "CA", type: "tax", suffix: "paycheck-tax-calculator", titleSuffix: "Paycheck Tax Calculator" },
-    { state: "TX", type: "tax", suffix: "paycheck-tax-calculator", titleSuffix: "Paycheck Tax Calculator" },
-    { state: "NY", type: "tax", suffix: "paycheck-tax-calculator", titleSuffix: "Paycheck Tax Calculator" },
-    { state: "FL", type: "tax", suffix: "paycheck-tax-calculator", titleSuffix: "Paycheck Tax Calculator" },
-    { state: "CA", type: "hourly", suffix: "hourly-paycheck-calculator", titleSuffix: "Hourly Paycheck Calculator" },
-    { state: "TX", type: "hourly", suffix: "hourly-paycheck-calculator", titleSuffix: "Hourly Paycheck Calculator" },
-    { state: "NY", type: "hourly", suffix: "hourly-paycheck-calculator", titleSuffix: "Hourly Paycheck Calculator" },
-    { state: "FL", type: "hourly", suffix: "hourly-paycheck-calculator", titleSuffix: "Hourly Paycheck Calculator" },
+  const variants: {
+    state: StateCode;
+    type: "salary" | "takehome" | "tax" | "hourly";
+    suffix: string;
+    titleSuffix: string;
+    titleAngle: string;
+  }[] = [
+    {
+      state: "CA",
+      type: "salary",
+      suffix: "salary-calculator",
+      titleSuffix: "Salary Calculator",
+      titleAngle: "Annual Salary to Net Pay",
+    },
+    {
+      state: "TX",
+      type: "salary",
+      suffix: "salary-calculator",
+      titleSuffix: "Salary Calculator",
+      titleAngle: "Annual Salary to Net Pay",
+    },
+    {
+      state: "NY",
+      type: "salary",
+      suffix: "salary-calculator",
+      titleSuffix: "Salary Calculator",
+      titleAngle: "Annual Salary to Net Pay",
+    },
+    {
+      state: "FL",
+      type: "salary",
+      suffix: "salary-calculator",
+      titleSuffix: "Salary Calculator",
+      titleAngle: "Annual Salary to Net Pay",
+    },
+    {
+      state: "CA",
+      type: "takehome",
+      suffix: "take-home-pay-calculator",
+      titleSuffix: "Take Home Pay Calculator",
+      titleAngle: "Net Pay After Taxes",
+    },
+    {
+      state: "TX",
+      type: "takehome",
+      suffix: "take-home-pay-calculator",
+      titleSuffix: "Take Home Pay Calculator",
+      titleAngle: "Net Pay After Taxes",
+    },
+    {
+      state: "NY",
+      type: "takehome",
+      suffix: "take-home-pay-calculator",
+      titleSuffix: "Take Home Pay Calculator",
+      titleAngle: "Net Pay After Taxes",
+    },
+    {
+      state: "FL",
+      type: "takehome",
+      suffix: "take-home-pay-calculator",
+      titleSuffix: "Take Home Pay Calculator",
+      titleAngle: "Net Pay After Taxes",
+    },
+    {
+      state: "CA",
+      type: "tax",
+      suffix: "paycheck-tax-calculator",
+      titleSuffix: "Paycheck Tax Calculator",
+      titleAngle: "Withholding Breakdown",
+    },
+    {
+      state: "TX",
+      type: "tax",
+      suffix: "paycheck-tax-calculator",
+      titleSuffix: "Paycheck Tax Calculator",
+      titleAngle: "Withholding Breakdown",
+    },
+    {
+      state: "NY",
+      type: "tax",
+      suffix: "paycheck-tax-calculator",
+      titleSuffix: "Paycheck Tax Calculator",
+      titleAngle: "Withholding Breakdown",
+    },
+    {
+      state: "FL",
+      type: "tax",
+      suffix: "paycheck-tax-calculator",
+      titleSuffix: "Paycheck Tax Calculator",
+      titleAngle: "Withholding Breakdown",
+    },
+    {
+      state: "CA",
+      type: "hourly",
+      suffix: "hourly-paycheck-calculator",
+      titleSuffix: "Hourly Paycheck Calculator",
+      titleAngle: "Hourly & Overtime Net",
+    },
+    {
+      state: "TX",
+      type: "hourly",
+      suffix: "hourly-paycheck-calculator",
+      titleSuffix: "Hourly Paycheck Calculator",
+      titleAngle: "Hourly & Overtime Net",
+    },
+    {
+      state: "NY",
+      type: "hourly",
+      suffix: "hourly-paycheck-calculator",
+      titleSuffix: "Hourly Paycheck Calculator",
+      titleAngle: "Hourly & Overtime Net",
+    },
+    {
+      state: "FL",
+      type: "hourly",
+      suffix: "hourly-paycheck-calculator",
+      titleSuffix: "Hourly Paycheck Calculator",
+      titleAngle: "Hourly & Overtime Net",
+    },
   ];
 
-  return variants.map(({ state, type, suffix, titleSuffix }) => {
+  return variants.map(({ state, type, suffix, titleSuffix, titleAngle }) => {
     const s = getStateTaxSummary(state);
     const slug = `${s.name.toLowerCase().replace(/\s+/g, "-")}-${suffix}`;
     const payType = type === "hourly" ? ("hourly" as const) : ("salary" as const);
@@ -115,21 +218,21 @@ function buildStateVariants(): SEOPage[] {
           : type === "tax"
             ? "paycheck tax withholding"
             : "annual and biweekly salary";
+    const mainName = `${s.name} paycheck calculator`;
 
     return {
       slug,
-      title: `${s.name} ${titleSuffix} ${YEAR} — After Tax`,
+      title: `${s.name} ${titleSuffix} ${YEAR} — ${titleAngle}`,
       h1: `${s.name} ${titleSuffix}`,
-      description: `Free ${s.name} ${titleSuffix.toLowerCase()} for ${YEAR}. Calculate ${focus} after federal${s.hasIncomeTax ? `, ${s.name} state (${s.rateLabel}),` : ""} and FICA taxes.`,
+      description: `Free ${s.name} ${titleSuffix.toLowerCase()} for ${YEAR} focused on ${focus}. Estimate after federal${s.hasIncomeTax ? `, ${s.name} state (${s.rateLabel}),` : ""} and FICA — distinct from the main ${mainName}.`,
       keywords: [
         `${s.name.toLowerCase()} ${suffix.replace(/-/g, " ")}`,
-        `${s.name.toLowerCase()} salary after tax`,
-        `${s.name.toLowerCase()} net pay calculator`,
-        `${s.name.toLowerCase()} paycheck calculator`,
+        `${s.name.toLowerCase()} ${type === "takehome" ? "take home pay" : type === "tax" ? "paycheck tax" : type === "hourly" ? "hourly paycheck" : "salary"} calculator`,
+        `${s.name.toLowerCase()} ${focus.split(" ")[0]} after tax`,
       ],
       category: "state-variant" as const,
       stateCode: state,
-      priority: "high" as const,
+      priority: "normal" as const,
       defaults: {
         country: "US",
         state,
@@ -138,11 +241,11 @@ function buildStateVariants(): SEOPage[] {
         grossAmount: gross,
         ...(state === "NY" ? { zip: "10001" } : {}),
       },
-      faqs: buildStateFaqs(state),
+      faqs: buildVariantFaqs(state, type, focus, mainName),
       contentSections: [
         {
           heading: `${s.name} ${titleSuffix}`,
-          body: `Use this ${s.name} ${titleSuffix.toLowerCase()} to estimate ${focus}. ${s.rateDetail} ${s.notes}`,
+          body: `Use this ${s.name} ${titleSuffix.toLowerCase()} to estimate ${focus}. ${s.rateDetail} For the full ${s.name} overview, worked scenarios, and long-form FAQs, use the main ${mainName}. ${s.notes}`,
         },
         ...buildStateContentSections(state).slice(1, 3),
         ...topStateExtraSections(state),
@@ -150,6 +253,40 @@ function buildStateVariants(): SEOPage[] {
       scenarios: getStateScenarios(state),
     };
   });
+}
+
+function buildVariantFaqs(
+  state: StateCode,
+  type: "salary" | "takehome" | "tax" | "hourly",
+  focus: string,
+  mainName: string
+): SEOPage["faqs"] {
+  const s = getStateTaxSummary(state);
+  const typeLabel =
+    type === "salary"
+      ? "salary"
+      : type === "takehome"
+        ? "take-home pay"
+        : type === "tax"
+          ? "tax withholding"
+          : "hourly";
+
+  return [
+    {
+      question: `How is this ${s.name} ${typeLabel} calculator different from the main ${s.name} paycheck calculator?`,
+      answer: `This page focuses on ${focus}. The main ${mainName} has the broader ${s.name} overview, more FAQs, and the same underlying ${YEAR} tax engine.`,
+    },
+    {
+      question: `Does ${s.name} state tax apply on this ${typeLabel} page?`,
+      answer: s.hasIncomeTax
+        ? `Yes. ${s.rateDetail} Federal income tax and FICA still apply on every estimate.`
+        : `No state wage income tax — estimates here are mainly federal income tax plus FICA (Social Security and Medicare).`,
+    },
+    {
+      question: `Can I switch between salary and hourly for ${s.name}?`,
+      answer: `Yes. Use the pay type control on this page, or open the dedicated ${s.name} hourly / salary variant pages. All share the same ${s.name} tax settings for ${YEAR}.`,
+    },
+  ];
 }
 
 export const SEO_PAGES: SEOPage[] = [
@@ -623,7 +760,15 @@ export function getAllSlugs(): string[] {
 
 export function getRelatedPages(page: SEOPage, limit = 8): SEOPage[] {
   const related: SEOPage[] = [];
+  const seen = new Set<string>();
+  const push = (p: SEOPage | undefined) => {
+    if (!p || p.slug === page.slug || seen.has(p.slug)) return;
+    seen.add(p.slug);
+    related.push(p);
+  };
+
   const statePages = SEO_PAGES.filter((p) => p.category === "state");
+  const highStates = statePages.filter((p) => p.priority === "high");
   const intlPages = SEO_PAGES.filter(
     (p) =>
       p.category === "country" ||
@@ -632,44 +777,76 @@ export function getRelatedPages(page: SEOPage, limit = 8): SEOPage[] {
   );
 
   if (page.category === "state" || page.category === "state-variant") {
-    related.push(...SEO_PAGES.filter((p) => p.category === "frequency").slice(0, 3));
-    related.push(...SEO_PAGES.filter((p) => p.category === "tax").slice(0, 2));
-    if (page.defaults?.state) {
-      const stateSlug = `${STATE_NAMES[page.defaults.state].toLowerCase().replace(/\s+/g, "-")}-paycheck-calculator`;
-      const main = SEO_PAGES.find((p) => p.slug === stateSlug);
-      if (main && main.slug !== page.slug) related.unshift(main);
+    const code = page.stateCode ?? page.defaults?.state;
+    if (code) {
+      const mainSlug = `${STATE_NAMES[code]
+        .toLowerCase()
+        .replace(/\s+/g, "-")}-paycheck-calculator`;
+      push(SEO_PAGES.find((p) => p.slug === mainSlug));
+
+      // Sibling variants for the same state (salary / hourly / take-home / tax)
+      for (const p of SEO_PAGES) {
+        if (
+          p.category === "state-variant" &&
+          p.stateCode === code &&
+          p.slug !== page.slug
+        ) {
+          push(p);
+        }
+      }
+
+      for (const peer of getCompareStateLinks(code, 6)) {
+        const peerSlug = `${STATE_NAMES[peer]
+          .toLowerCase()
+          .replace(/\s+/g, "-")}-paycheck-calculator`;
+        push(SEO_PAGES.find((p) => p.slug === peerSlug));
+      }
     }
-    related.push(
-      ...statePages.filter(
-        (p) =>
-          p.slug !== page.slug &&
-          ["california", "texas", "new-york", "florida", "colorado"].some((s) =>
-            p.slug.startsWith(s)
-          )
-      )
-    );
+
+    for (const p of SEO_PAGES.filter((p) => p.category === "frequency").slice(
+      0,
+      2
+    )) {
+      push(p);
+    }
+    push(SEO_PAGES.find((p) => p.slug === "paycheck-tax-calculator"));
   } else if (
     page.category === "country" ||
     page.category === "province" ||
     page.category === "europe"
   ) {
-    related.push(...SEO_PAGES.filter((p) => p.category === "country").slice(0, 4));
-    related.push(...SEO_PAGES.filter((p) => p.category === "europe").slice(0, 4));
+    for (const p of SEO_PAGES.filter((p) => p.category === "country").slice(
+      0,
+      4
+    )) {
+      push(p);
+    }
+    for (const p of SEO_PAGES.filter((p) => p.category === "europe").slice(
+      0,
+      4
+    )) {
+      push(p);
+    }
     if (page.countryCode === "CA") {
-      related.push(
-        ...SEO_PAGES.filter((p) => p.category === "province").slice(0, 6)
-      );
+      for (const p of SEO_PAGES.filter((p) => p.category === "province").slice(
+        0,
+        6
+      )) {
+        push(p);
+      }
     }
   } else if (page.category === "hub") {
-    related.push(...statePages);
-    related.push(...intlPages.filter((p) => p.category === "country"));
+    for (const p of highStates) push(p);
+    for (const p of statePages) push(p);
+    for (const p of intlPages.filter((p) => p.category === "country")) push(p);
   } else {
-    related.push(...statePages.slice(0, 4));
-    related.push(...intlPages.filter((p) => p.category === "country").slice(0, 4));
-    related.push(...SEO_PAGES.filter((p) => p.category === "frequency"));
+    for (const p of highStates.slice(0, 4)) push(p);
+    for (const p of intlPages.filter((x) => x.category === "country").slice(0, 3))
+      push(p);
+    for (const p of SEO_PAGES.filter((p) => p.category === "frequency")) push(p);
   }
 
-  return related.filter((p) => p.slug !== page.slug).slice(0, limit);
+  return related.slice(0, limit);
 }
 
 export function getAllStatePages(): SEOPage[] {

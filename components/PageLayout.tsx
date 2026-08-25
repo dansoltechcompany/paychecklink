@@ -7,9 +7,11 @@ import {
   getAllStatePages,
 } from "@/lib/seo/pages";
 import {
+  getCompareStateLinks,
   getStateExamplePays,
   getStateTaxSummary,
 } from "@/lib/seo/state-content";
+import { STATE_NAMES } from "@/lib/types";
 import Calculator from "./Calculator";
 import Footer from "./Footer";
 import Navbar from "./Navbar";
@@ -181,12 +183,39 @@ export default function PageLayout({ page, related }: Props) {
                 ["texas-paycheck-calculator", "Texas"],
                 ["new-york-paycheck-calculator", "New York"],
                 ["florida-paycheck-calculator", "Florida"],
+                ["georgia-paycheck-calculator", "Georgia"],
+                ["illinois-paycheck-calculator", "Illinois"],
+                ["pennsylvania-paycheck-calculator", "Pennsylvania"],
+                ["washington-paycheck-calculator", "Washington"],
                 ["states", "All states"],
               ].map(([href, label]) => (
                 <Link key={href} href={href === "states" ? "/states" : `/${href}`}>
                   {label}
                 </Link>
               ))}
+            </div>
+          </section>
+        )}
+
+        {isStatePage && page.stateCode && (
+          <section className="content-section">
+            <h2>Compare take-home with other states</h2>
+            <p>
+              Same gross salary can mean very different net pay. Open a peer
+              state calculator — rates stay preloaded for a faster side-by-side
+              estimate.
+            </p>
+            <div className="states-grid">
+              {getCompareStateLinks(page.stateCode, 6).map((code) => {
+                const slug = `${STATE_NAMES[code]
+                  .toLowerCase()
+                  .replace(/\s+/g, "-")}-paycheck-calculator`;
+                return (
+                  <Link key={code} href={`/${slug}`}>
+                    {STATE_NAMES[code]}
+                  </Link>
+                );
+              })}
             </div>
           </section>
         )}
@@ -256,14 +285,11 @@ export default function PageLayout({ page, related }: Props) {
           <section className="related-links">
             <h2>Related Calculators</h2>
             <div className="link-grid">
-              {related
-                .filter((p) => p.category !== "state" || !isStatePage)
-                .slice(0, 8)
-                .map((p) => (
-                  <Link key={p.slug} href={p.slug ? `/${p.slug}` : "/"}>
-                    {p.h1}
-                  </Link>
-                ))}
+              {related.slice(0, 8).map((p) => (
+                <Link key={p.slug} href={p.slug ? `/${p.slug}` : "/"}>
+                  {p.h1}
+                </Link>
+              ))}
             </div>
           </section>
         )}

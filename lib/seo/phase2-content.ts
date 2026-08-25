@@ -255,6 +255,10 @@ export function phase2ExtraFaqs(
   return faqs;
 }
 
+function articleFor(name: string): string {
+  return /^[aeiou]/i.test(name) ? "an" : "a";
+}
+
 export function phase2ExtraSections(
   code: StateCode
 ): { heading: string; body: string }[] {
@@ -271,19 +275,35 @@ export function phase2ExtraSections(
     state: code,
   });
   const caveat = localCaveat(code);
+  const ca = calculatePaycheck({
+    country: "US",
+    payType: "salary",
+    grossAmount: 60000 / 26,
+    payFrequency: "biweekly",
+    filingStatus: "single",
+    state: "CA",
+  });
+  const tx = calculatePaycheck({
+    country: "US",
+    payType: "salary",
+    grossAmount: 60000 / 26,
+    payFrequency: "biweekly",
+    filingStatus: "single",
+    state: "TX",
+  });
 
   let body: string;
   if (cfg.type === "none") {
-    body = `${name} is a no-state-wage-tax state for ${YEAR}: paycheck withholding is mainly federal Pub 15-T income tax, Social Security, and Medicare. At $60,000 single, we estimate about ${money(mid.netAnnual)} take-home (${moneyExact(mid.netPay)} biweekly · ~${mid.effectiveTaxRate.toFixed(1)}% effective). Compare with California or New York to see how much state/local tax changes net pay. ${caveat ?? ""}`.trim();
+    body = `${name} is a no-state-wage-tax state for ${YEAR}: paycheck withholding is mainly federal Pub 15-T income tax, Social Security, and Medicare. At $60,000 single, we estimate about ${money(mid.netAnnual)} take-home (${moneyExact(mid.netPay)} biweekly · ~${mid.effectiveTaxRate.toFixed(1)}% effective). The same salary in California is about ${money(ca.netAnnual)} net; in Texas about ${money(tx.netAnnual)}. Use the compare links below for side-by-side state pages. ${caveat ?? ""}`.trim();
   } else if (cfg.type === "flat") {
-    body = `${taxBlurb(code)}. Because the rate does not climb with income, ${name} estimates scale more predictably than multi-bracket states. At $60,000 single, estimated net is about ${money(mid.netAnnual)}/year (${moneyExact(mid.netPay)} biweekly). ${caveat ?? "Enter ZIP or a custom local % if your city withholds local tax."}`.trim();
+    body = `${taxBlurb(code)}. Because the rate does not climb with income, ${name} estimates scale more predictably than multi-bracket states. At $60,000 single, estimated net is about ${money(mid.netAnnual)}/year (${moneyExact(mid.netPay)} biweekly) — versus about ${money(tx.netAnnual)} in no-tax Texas and ${money(ca.netAnnual)} in California. ${caveat ?? "Enter ZIP or a custom local % if your city withholds local tax."}`.trim();
   } else {
-    body = `${taxBlurb(code)}. Filing status and deductions change federal withholding and, when configured, ${name} taxable wages. At $60,000 single, estimated take-home is about ${money(mid.netAnnual)}/year (${moneyExact(mid.netPay)} biweekly). ${caveat ?? "Use advanced options for 401(k) and W-4 settings for a closer stub match."}`.trim();
+    body = `${taxBlurb(code)}. Filing status and deductions change federal withholding and, when configured, ${name} taxable wages. At $60,000 single, estimated take-home is about ${money(mid.netAnnual)}/year (${moneyExact(mid.netPay)} biweekly). For context, Texas (no state wage tax) is about ${money(tx.netAnnual)} and California about ${money(ca.netAnnual)} at the same gross. ${caveat ?? "Use advanced options for 401(k) and W-4 settings for a closer stub match."}`.trim();
   }
 
   return [
     {
-      heading: `What makes a ${name} paycheck different (${YEAR})`,
+      heading: `What makes ${articleFor(name)} ${name} paycheck different (${YEAR})`,
       body,
     },
   ];

@@ -241,17 +241,63 @@ export function buildStateFaqs(code: StateCode): { question: string; answer: str
   ];
 }
 
+export function getCompareStateLinks(code: StateCode, limit = 6): StateCode[] {
+  const anchors: StateCode[] = ["CA", "TX", "NY", "FL", "WA", "GA", "IL", "PA"];
+  const regional: Partial<Record<StateCode, StateCode[]>> = {
+    AL: ["GA", "FL", "TN"],
+    AZ: ["CA", "NV", "CO"],
+    CO: ["AZ", "UT", "NM"],
+    CT: ["NY", "MA", "RI"],
+    DE: ["PA", "MD", "NJ"],
+    HI: ["CA", "WA", "OR"],
+    ID: ["WA", "UT", "OR"],
+    IN: ["IL", "OH", "KY"],
+    IA: ["IL", "MN", "NE"],
+    KS: ["MO", "OK", "CO"],
+    KY: ["OH", "TN", "IN"],
+    LA: ["TX", "MS", "AR"],
+    ME: ["NH", "MA", "VT"],
+    MA: ["NY", "CT", "NH"],
+    MI: ["OH", "IN", "WI"],
+    MN: ["WI", "IA", "ND"],
+    MS: ["AL", "LA", "TN"],
+    MO: ["IL", "KS", "AR"],
+    MT: ["ID", "WY", "ND"],
+    NE: ["IA", "KS", "CO"],
+    NV: ["CA", "AZ", "UT"],
+    NH: ["MA", "VT", "ME"],
+    NJ: ["NY", "PA", "DE"],
+    NM: ["TX", "AZ", "CO"],
+    NC: ["SC", "GA", "VA"],
+    ND: ["MN", "SD", "MT"],
+    OK: ["TX", "KS", "AR"],
+    OR: ["WA", "CA", "ID"],
+    RI: ["MA", "CT", "NY"],
+    SC: ["NC", "GA", "FL"],
+    SD: ["ND", "MN", "NE"],
+    TN: ["GA", "AL", "KY"],
+    UT: ["CO", "AZ", "ID"],
+    VT: ["NH", "NY", "MA"],
+    VA: ["MD", "NC", "WV"],
+    WV: ["VA", "OH", "PA"],
+    WI: ["IL", "MN", "MI"],
+    WY: ["CO", "UT", "MT"],
+    AR: ["TX", "TN", "MO"],
+    AK: ["WA", "OR", "CA"],
+  };
+
+  const out: StateCode[] = [];
+  const add = (c: StateCode) => {
+    if (c !== code && !out.includes(c)) out.push(c);
+  };
+  for (const c of regional[code] ?? []) add(c);
+  for (const c of anchors) add(c);
+  return out.slice(0, limit);
+}
+
+/** @deprecated Use getCompareStateLinks — alphabetical neighbors are weak for SEO. */
 export function getNeighborStateLinks(code: StateCode, limit = 8): StateCode[] {
-  const order = Object.keys(STATE_NAMES) as StateCode[];
-  const idx = order.indexOf(code);
-  const neighbors: StateCode[] = [];
-  for (let i = 1; neighbors.length < limit; i++) {
-    const left = order[(idx - i + order.length) % order.length];
-    const right = order[(idx + i) % order.length];
-    if (left !== code) neighbors.push(left);
-    if (neighbors.length < limit && right !== code) neighbors.push(right);
-  }
-  return neighbors.slice(0, limit);
+  return getCompareStateLinks(code, limit);
 }
 
 export { YEAR as CONTENT_YEAR };

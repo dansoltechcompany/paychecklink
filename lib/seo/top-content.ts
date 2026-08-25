@@ -1,6 +1,7 @@
 import { calculatePaycheck } from "../calculator";
 import type { StateCode } from "../types";
 import { STATE_NAMES } from "../types";
+import { STATE_TAX } from "../tax/state";
 import { getPhase2Scenarios } from "./phase2-content";
 import { isPhase1State } from "./phase1-content";
 import type { PayScenario, SEOPage } from "./types";
@@ -513,7 +514,16 @@ export function topStateExtraSections(state: StateCode): SEOPage["contentSection
 
   const genericTip = isPhase1State(state)
     ? `Use advanced options for W-4 settings, 401(k), and local ZIP when applicable. Compare neighboring state calculators for relocation planning.`
-    : `Use advanced options for W-4 settings and 401(k). If your city withholds local tax, enter a ZIP or custom local %. Compare with California, Texas, New York, or Florida for take-home context.`;
+    : (() => {
+        const cfg = STATE_TAX[state];
+        if (cfg.type === "none") {
+          return `Because ${name} has no state wage income tax, focus on federal W-4 settings, FICA, and pre-tax 401(k). Use the compare links on this page for California, Texas, New York, or Florida take-home context.`;
+        }
+        if (cfg.type === "flat") {
+          return `${name} uses a flat state rate — filing status mainly changes federal withholding. Enter ZIP or a custom local % if your city adds local tax, and compare with Texas or California for relocation math.`;
+        }
+        return `Use advanced options for W-4 settings and 401(k). Progressive ${name} brackets mean raises can move state withholding; compare with Texas (no state wage tax) or California for side-by-side context.`;
+      })();
 
   return [
     {

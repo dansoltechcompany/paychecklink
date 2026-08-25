@@ -195,6 +195,21 @@ export default function MethodologyContent() {
         </section>
 
         <section className="content-section">
+          <h2>Keeping rates and page copy in sync</h2>
+          <p>
+            Worked examples and many FAQ take-home figures are generated from
+            the same calculator engine at build time, so a tax-table fix updates
+            those numbers automatically. Static rate claims in editorial notes
+            (for example prior-year “down from” figures) are guarded by an
+            automated content-drift test in CI — when we change{" "}
+            <code>STATE_TAX</code> or related constants, that test fails if
+            prose still cites a stale percentage or deduction. After mid-year
+            legislation, we update the engine first, then re-run{" "}
+            <code>npm test</code> before publishing.
+          </p>
+        </section>
+
+        <section className="content-section">
           <h2>Why results can still differ from your payslip</h2>
           <ul className="methodology-list">
             <li>Employer-specific benefits, garnishments, or rounding</li>

@@ -4,10 +4,6 @@ import { SEO_PAGES, getAllSlugs } from "@/lib/seo/pages";
 
 export const dynamic = "force-static";
 
-const HIGH_SLUGS = new Set(
-  SEO_PAGES.filter((p) => p.priority === "high" && p.slug).map((p) => p.slug)
-);
-
 export default function sitemap(): MetadataRoute.Sitemap {
   const slugs = getAllSlugs();
   const now = new Date();
@@ -44,20 +40,26 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.6,
     },
     ...slugs.map((slug) => {
+      const page = SEO_PAGES.find((p) => p.slug === slug);
+      const isVariant = page?.category === "state-variant";
+      const isMainState =
+        page?.category === "state" && slug.endsWith("-paycheck-calculator");
       const isTopState =
-        /^(california|texas|new-york|florida)-/.test(slug) ||
-        HIGH_SLUGS.has(slug);
+        page?.priority === "high" ||
+        /^(california|texas|new-york|florida)-paycheck-calculator$/.test(slug);
+
+      let priority = 0.7;
+      if (isVariant) priority = 0.68;
+      else if (isTopState) priority = 0.95;
+      else if (isMainState) priority = 0.82;
+      else if (slug.includes("paycheck") || slug.includes("salary"))
+        priority = 0.78;
+
       return {
         url: `${SITE_URL}/${slug}`,
         lastModified: now,
         changeFrequency: "monthly" as const,
-        priority: isTopState
-          ? 0.95
-          : slug.endsWith("-paycheck-calculator")
-            ? 0.82
-            : slug.includes("paycheck") || slug.includes("salary")
-              ? 0.78
-              : 0.7,
+        priority,
       };
     }),
   ];
