@@ -80,6 +80,20 @@ describe("Federal Pub 15-T withholding", () => {
     // At least the supplemental portion should contribute ~220
     assert.ok(result.perPeriod > 220);
   });
+
+  it("matches Pub 15-T 2026 for $60k single biweekly standard withholding", () => {
+    // Worksheet 1A: $2,307.69 × 26 = $60,000; Step 1g $8,600 → adj $51,400
+    // STANDARD: $1,240 + 12% × ($51,400 − $19,900) = $5,020 / 26 ≈ $193.08
+    // Wage Bracket table for $2,305–$2,325 ≈ $194
+    const result = calculateFederalWithholding({
+      wagesPerPeriod: 2307.69,
+      payFrequency: "biweekly",
+      filingStatus: "single",
+      w4Step2: false,
+    });
+    assert.ok(Math.abs(result.perPeriod - 193.08) < 0.5);
+    assert.ok(result.perPeriod >= 192 && result.perPeriod <= 195);
+  });
 });
 
 describe("Local ZIP taxes", () => {
