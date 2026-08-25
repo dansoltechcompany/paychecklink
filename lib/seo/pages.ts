@@ -18,6 +18,12 @@ import {
   topStateExtraSections,
 } from "./top-content";
 import { isPhase1State } from "./phase1-content";
+import {
+  hub401kImpactBody,
+  hubBiweeklyTaxBreakdownBody,
+  hubNetHourlyAfterTaxBody,
+  hubOvertimeExampleBody,
+} from "./hub-live-copy";
 import type { PageCategory, PageDefaults, SEOPage } from "./types";
 
 export type { PageCategory, PageDefaults, SEOPage };
@@ -361,7 +367,7 @@ export const SEO_PAGES: SEOPage[] = [
       },
       {
         heading: "Biweekly paycheck tax breakdown",
-        body: "On a $60,000 salary (about $2,308 gross per period), a single filer in a state like California might see roughly $290 federal tax, $100 state tax, $143 Social Security, and $33 Medicare withheld — leaving approximately $1,742 net. In Texas (no state tax), the same gross yields roughly $1,842. Use the calculator above with your exact state and filing status for a personalized breakdown.",
+        body: hubBiweeklyTaxBreakdownBody(),
       },
       {
         heading: "Optimizing your biweekly take-home",
@@ -503,7 +509,7 @@ export const SEO_PAGES: SEOPage[] = [
       },
       {
         heading: "Net hourly rate after taxes",
-        body: "Your true take-home per hour is lower than gross hourly because taxes apply. On a $75,000 salary in California, after federal, state, and FICA taxes you might net roughly $55,000 — which works out to about $26.44 per hour worked. In Texas, the same salary nets closer to $58,500 ($28.13/hour). Use the state selector above to see your specific after-tax hourly equivalent.",
+        body: hubNetHourlyAfterTaxBody(),
       },
     ],
   },
@@ -531,7 +537,7 @@ export const SEO_PAGES: SEOPage[] = [
     contentSections: [
       {
         heading: "401(k) impact on paycheck",
-        body: "Pre-tax 401(k) lowers federal income tax withholding while Social Security and Medicare generally still apply to those wages. For example, contributing 6% of a $60,000 salary ($3,600/year) reduces your taxable income and saves roughly $792 in federal tax annually at the 22% bracket — meaning your net pay only drops by about $2,808 even though $3,600 goes into retirement.",
+        body: hub401kImpactBody(),
       },
       {
         heading: "Traditional 401(k) vs Roth 401(k)",
@@ -569,7 +575,7 @@ export const SEO_PAGES: SEOPage[] = [
       },
       {
         heading: "Overtime example: $25/hour with 5 OT hours",
-        body: "At $25/hour with 40 regular hours plus 5 overtime hours (at $37.50/hour), your weekly gross jumps from $1,000 to $1,187.50 — an extra $187.50 before taxes. After federal, state, and FICA withholding, you might keep around $130–$150 of that depending on your state and bracket. Enter your exact rate above to see a personalized breakdown.",
+        body: hubOvertimeExampleBody(),
       },
     ],
   },

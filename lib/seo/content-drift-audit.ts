@@ -131,7 +131,14 @@ export function collectStaticProseBlobs(): ProseBlob[] {
     if (caveat) blobs.push({ id: `phase2-caveat:${code}`, text: caveat });
   }
 
-  // Hub / frequency / pay-type illustrative copy only (not state or state-variant pages)
+  // Hub / frequency / pay-type illustrative copy only (not state or state-variant pages).
+  // Skip sections whose bodies are built by hub-live-copy.ts (engine-synced).
+  const liveHubHeadings = new Set([
+    "Biweekly paycheck tax breakdown",
+    "Net hourly rate after taxes",
+    "401(k) impact on paycheck",
+    "Overtime example: $25/hour with 5 OT hours",
+  ]);
   const hubCategories = new Set([
     "hub",
     "tax",
@@ -148,6 +155,7 @@ export function collectStaticProseBlobs(): ProseBlob[] {
       });
     }
     for (const sec of page.contentSections ?? []) {
+      if (liveHubHeadings.has(sec.heading)) continue;
       blobs.push({
         id: `hub-section:${page.slug}:${sec.heading}`,
         text: `${sec.heading} ${sec.body}`,
@@ -503,18 +511,6 @@ export const MANUAL_REVIEW_CLAIMS: ManualReviewClaim[] = [
     reason: "PA local EIT range across municipalities — not a single mapped ZIP rate",
   },
   {
-    id: "hub-biweekly-illustrative-withholding",
-    proseMatch: "roughly $290 federal tax",
-    reason:
-      "Hub biweekly page uses round illustrative CA/TX withholding ($290/$100/$143/$33/$1,742/$1,842) — not pinned to live calculatePaycheck output",
-  },
-  {
-    id: "hub-hourly-illustrative-nets",
-    proseMatch: "might net roughly $55,000",
-    reason:
-      "Hub hourly→salary page uses round CA/TX annual net illustrations ($55k / $58,500) — not live engine figures",
-  },
-  {
     id: "hub-bonus-supplemental-22",
     proseMatch: "22%",
     reason:
@@ -544,11 +540,6 @@ export const MANUAL_REVIEW_CLAIMS: ManualReviewClaim[] = [
     id: "ca-sdi-biweekly-approx-30",
     proseMatch: "~$30 biweekly",
     reason: "Rounded SDI biweekly ($780/26 ≈ $30) — approximate wording, not exact engine period split",
-  },
-  {
-    id: "hub-ot-net-range",
-    proseMatch: "around $130–$150",
-    reason: "Overtime hub keeps a rounded after-tax range, not a live calculatePaycheck result",
   },
   {
     id: "hub-bonus-marginal-approx-32",
@@ -635,23 +626,8 @@ function manualCoversFigure(
     return true;
   if (claim.id === "hub-401k-catchup-31000" && fig.kind === "money" && fig.value === 31000)
     return true;
-  if (claim.id === "hub-biweekly-illustrative-withholding") {
-    return (
-      fig.kind === "money" &&
-      [290, 100, 143, 33, 1742, 1842].includes(Math.round(fig.value))
-    );
-  }
-  if (claim.id === "hub-hourly-illustrative-nets") {
-    return (
-      fig.kind === "money" &&
-      [55000, 58500, 26.44, 28.13].some((v) => nearlyEqual(v, fig.value, 0.01))
-    );
-  }
   if (claim.id === "ca-sdi-biweekly-approx-30" && fig.kind === "money" && fig.value === 30)
     return true;
-  if (claim.id === "hub-ot-net-range") {
-    return fig.kind === "money" && (fig.value === 130 || fig.value === 150);
-  }
   if (claim.id === "hub-bonus-marginal-approx-32" && fig.kind === "pct" && fig.value === 32)
     return true;
   if (claim.id === "tx-zero-state-rate-wording") {
