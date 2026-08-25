@@ -160,7 +160,7 @@ const en: Dictionary = {
     "This paycheck calculator provides estimates only and is not tax advice. Actual withholdings may differ based on W-4 settings, local taxes, benefits, and employer policies. Multi-state reciprocity and nonresident withholding are not modeled — use one work/tax state. Consult a tax professional for personalized guidance.",
   "ui.home": "Home",
   "ui.breadcrumbStates": "States",
-  "states.title": "State Paycheck Calculators",
+  "states.title": "US State Paycheck Calculators",
   "states.subtitle":
     "Choose your state for a salary paycheck calculator with that state’s tax rules preloaded.",
   "states.allStates": "All 50 States",
@@ -448,7 +448,7 @@ const tl: Dictionary = {
     "Ang calculator ay nagbibigay ng tantiya lang at hindi tax advice.",
   "ui.home": "Home",
   "ui.breadcrumbStates": "Mga Estado",
-  "states.title": "State Paycheck Calculators",
+  "states.title": "US State Paycheck Calculators",
   "states.subtitle":
     "Piliin ang iyong estado para sa calculator na may preload na tax rules.",
   "states.allStates": "Lahat ng 50 Estado",
