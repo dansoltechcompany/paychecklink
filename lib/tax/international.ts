@@ -23,6 +23,32 @@ type IntlResult = {
   labels: { incomeTax: string; social: string; other?: string };
 };
 
+export const EUROPE_TAX_SOURCE =
+  "DE 2026 Grundfreibetrag + BBG social; IE Revenue 2026 bands/USC/PRSI; NL Belastingdienst Box 1 2026";
+
+function irelandUsc(annualGross: number): number {
+  if (annualGross <= 13000) return 0;
+  let usc = Math.min(annualGross, 12012) * 0.005;
+  if (annualGross > 12012) {
+    usc += Math.min(annualGross - 12012, 28700 - 12012) * 0.02;
+  }
+  if (annualGross > 28700) {
+    usc += Math.min(annualGross - 28700, 70044 - 28700) * 0.03;
+  }
+  if (annualGross > 70044) {
+    usc += (annualGross - 70044) * 0.08;
+  }
+  return usc;
+}
+
+function germanyEmployeeSocial(annualGross: number): number {
+  // Employee shares 2026 (avg health Zusatzbeitrag 1.45%); care assumes with children (1.8%)
+  const pensionUnemp = Math.min(annualGross, 101400) * (0.093 + 0.013);
+  const healthCare =
+    Math.min(annualGross, 69750) * (0.073 + 0.0145 + 0.018);
+  return pensionUnemp + healthCare;
+}
+
 /** Simplified Tier-1 country engines for take-home estimates */
 export function calculateInternationalTax(
   country: Exclude<CountryCode, "US" | "UK" | "CA">,
@@ -47,32 +73,34 @@ export function calculateInternationalTax(
       };
     }
     case "IE": {
+      // Revenue.ie 2026 — single standard-rate band + personal+PAYE credits
       const standardRateBand = 44000;
-      const incomeTax =
+      const rawTax =
         Math.min(annualGross, standardRateBand) * 0.2 +
         Math.max(0, annualGross - standardRateBand) * 0.4;
-      // Rough USC + PRSI blend
-      const social = annualGross * 0.08;
+      const taxCredits = 2000 + 2000; // personal + employee PAYE
+      const incomeTax = Math.max(0, rawTax - taxCredits);
+      const usc = irelandUsc(annualGross);
+      const prsi = annualGross * 0.042; // Class A Jan–Sep 2026 rate (simplified full-year)
       return {
-        incomeTax: Math.max(0, incomeTax - 1875), // rough tax credit
-        social,
+        incomeTax,
+        social: usc + prsi,
         other: 0,
         labels: { incomeTax: "Income Tax", social: "USC + PRSI" },
       };
     }
     case "DE": {
-      // Very simplified progressive + social blend
+      // Simplified zone model (real Lohnsteuer is a continuous formula) + 2026 social BBGs
       const incomeTax = progressive(annualGross, [
-        { upTo: 11604, rate: 0 },
-        { upTo: 17005, rate: 0.14 },
-        { upTo: 66760, rate: 0.24 },
+        { upTo: 12348, rate: 0 },
+        { upTo: 17430, rate: 0.14 },
+        { upTo: 69878, rate: 0.24 },
         { upTo: 277826, rate: 0.42 },
         { upTo: Infinity, rate: 0.45 },
       ]);
-      const social = Math.min(annualGross, 90600) * 0.2;
-      // Solidarity surcharge largely phased out for typical earners
-      const soli =
-        annualGross > 80000 ? incomeTax * 0.055 : 0;
+      const social = germanyEmployeeSocial(annualGross);
+      // Solidaritätszuschlag largely phased out for typical earners
+      const soli = annualGross > 80000 ? incomeTax * 0.055 : 0;
       return {
         incomeTax,
         social,
@@ -85,15 +113,20 @@ export function calculateInternationalTax(
       };
     }
     case "NL": {
+      // Belastingdienst Box 1 2026 (under AOW age) — before heffingskortingen
       const incomeTax = progressive(annualGross, [
-        { upTo: 75518, rate: 0.3693 },
+        { upTo: 38883, rate: 0.3575 },
+        { upTo: 78426, rate: 0.3756 },
         { upTo: Infinity, rate: 0.495 },
       ]);
       return {
         incomeTax,
         social: 0,
         other: 0,
-        labels: { incomeTax: "Box 1 Tax (incl. national insurance)", social: "—" },
+        labels: {
+          incomeTax: "Box 1 Tax (incl. national insurance)",
+          social: "—",
+        },
       };
     }
     case "FR": {

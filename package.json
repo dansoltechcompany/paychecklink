@@ -10,7 +10,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "tsx --test lib/tax/accuracy.test.ts lib/tax/state-audit-2026.test.ts lib/tax/uk-canada-audit-2026.test.ts lib/seo/content-drift.test.ts",
+    "test": "tsx --test lib/tax/accuracy.test.ts lib/tax/state-audit-2026.test.ts lib/tax/uk-canada-audit-2026.test.ts lib/tax/europe-audit-2026.test.ts lib/seo/content-drift.test.ts",
     "clean": "node -e \"require('fs').rmSync('.next',{recursive:true,force:true}); require('fs').rmSync('out',{recursive:true,force:true})\"",
     "rebuild": "npm run clean && npm run build"
   },
