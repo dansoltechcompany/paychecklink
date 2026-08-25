@@ -211,6 +211,30 @@ describe("Mid-2026 legislative corrections (post–Tax Foundation snapshot)", ()
     // Taxable 60k → 30k×1.99% + 30k×5.21% = 2160
     assert.equal(calculateStateTax(WAGES, "SC", "single"), 2160);
   });
+
+  /**
+   * SCDOR literal upper-bracket formula (dor.sc.gov/news/information-about-h-4216):
+   *   "The tax rate for income from $30,000 and above is 5.21%, minus $966."
+   * i.e. tax = taxable × 0.0521 − 966  when taxable ≥ $30,000.
+   * Engine implements the equivalent bracket-walk; these goldens assert (A) literally.
+   * SCIAD ($15k single) is applied first — H.4216 replaced the federal SD.
+   */
+  it("SC: $30,000 taxable matches SCDOR formula income×0.0521−966 (= $597)", () => {
+    // Wages $45,000 − SCIAD $15,000 = taxable $30,000 exactly
+    assert.equal(getStateTaxableIncome(45000, "SC", "single"), 30000);
+    const tax = calculateStateTax(45000, "SC", "single");
+    const scdorLiteral = 30000 * 0.0521 - 966; // 597
+    assert.equal(scdorLiteral, 597);
+    assert.equal(tax, scdorLiteral);
+  });
+
+  it("SC: $75,000 wages → $60,000 taxable matches SCDOR formula (= $2,160)", () => {
+    assert.equal(getStateTaxableIncome(75000, "SC", "single"), 60000);
+    const tax = calculateStateTax(75000, "SC", "single");
+    const scdorLiteral = 60000 * 0.0521 - 966; // 2160
+    assert.equal(scdorLiteral, 2160);
+    assert.equal(tax, scdorLiteral);
+  });
 });
 
 describe(`Progressive / special structure states (${STATE_TAX_SOURCE_2026})`, () => {

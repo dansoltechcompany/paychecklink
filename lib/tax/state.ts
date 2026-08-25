@@ -375,7 +375,10 @@ export const STATE_TAX: Record<StateCode, StateTaxConfig> = {
     standardDeduction: sd(11200, 22400),
   },
   SC: {
-    // H.4216 / Act 110 (signed Mar 30, 2026) — SCDOR: 1.99% / 5.21%; SCIAD replaces federal SD
+    // H.4216 / Act 110 — SCDOR dor.sc.gov/news/information-about-h-4216:
+    //   ≤$30k: 1.99%; ≥$30k: "5.21% minus $966" (= income×0.0521 − 966).
+    // Bracket-walk below is algebraically identical for income ≥ $30k because
+    // 30000×(0.0521−0.0199) = 966. SCIAD replaces federal SD entirely.
     type: "progressive",
     brackets: [
       { upTo: 30000, rate: 0.0199 },
