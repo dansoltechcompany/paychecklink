@@ -8,8 +8,8 @@ export default function LogoMark({ className = "" }: { className?: string }) {
       <img
         src="/logo-mark.png"
         alt=""
-        width={32}
-        height={32}
+        width={38}
+        height={38}
         draggable={false}
         decoding="async"
       />
