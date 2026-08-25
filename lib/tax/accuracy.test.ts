@@ -8,8 +8,9 @@ import { calculatePaycheck } from "../calculator";
 import { calculateFederalWithholding } from "./federal-withholding";
 import { calculateFICA } from "./fica";
 import { lookupLocalTax } from "./local";
-import { calculateStateTax } from "./state";
+import { calculateStateTax, getStateTaxableIncome } from "./state";
 import { calculateCaSdi } from "./ca-sdi";
+import { calculateNycLocalTax, isNycZip } from "./nyc-local";
 
 describe("FICA", () => {
   it("applies 6.2% SS up to wage base", () => {
@@ -85,7 +86,13 @@ describe("Local ZIP taxes", () => {
   it("maps NYC ZIP 10001", () => {
     const info = lookupLocalTax("10001");
     assert.ok(info);
-    assert.ok((info?.rate ?? 0) > 0.04);
+    assert.equal(info?.name, "New York City, NY");
+  });
+
+  it("detects NYC ZIP prefixes including 10024", () => {
+    assert.ok(isNycZip("10024"));
+    assert.ok(isNycZip("11201"));
+    assert.ok(!isNycZip("90210"));
   });
 
   it("returns null for unknown ZIP", () => {
@@ -232,6 +239,64 @@ describe("California accuracy (FTB + EDD)", () => {
     assert.ok(result.netPay < result.grossPay);
   });
 });
+
+describe("New York & NYC accuracy", () => {
+  it("applies NY standard deduction on $75k single", () => {
+    assert.equal(getStateTaxableIncome(75000, "NY", "single", 0), 67000);
+    const annual = calculateStateTax(75000, "NY", "single", 0);
+    assert.ok(Math.abs(annual - 3520) < 1);
+  });
+
+  it("NYC progressive local tax on $67k NY taxable single", () => {
+    const annual = calculateNycLocalTax(67000, "single");
+    assert.ok(Math.abs(annual - 2472.09) < 1);
+  });
+
+  it("$75k single TX biweekly has zero state tax", () => {
+    const result = calculatePaycheck({
+      country: "US",
+      payType: "salary",
+      grossAmount: 75000 / 26,
+      payFrequency: "biweekly",
+      filingStatus: "single",
+      state: "TX",
+    });
+    assert.equal(result.stateTax, 0);
+    assert.equal(result.localTax, 0);
+    assert.ok(result.netPay > 0);
+  });
+
+  it("$75k single NYC 10001 matches NY state + NYC local benchmarks", () => {
+    const result = calculatePaycheck({
+      country: "US",
+      payType: "salary",
+      grossAmount: 75000 / 26,
+      payFrequency: "biweekly",
+      filingStatus: "single",
+      state: "NY",
+      zip: "10001",
+    });
+    assert.ok(Math.abs(result.stateTax - 135.38) < 1);
+    assert.ok(Math.abs(result.localTax - 95.08) < 1);
+    assert.ok(
+      result.breakdown.some((b) => b.label.includes("NYC resident tax"))
+    );
+  });
+
+  it("NYC ZIP 10024 applies progressive local tax", () => {
+    const result = calculatePaycheck({
+      country: "US",
+      payType: "salary",
+      grossAmount: 75000 / 26,
+      payFrequency: "biweekly",
+      filingStatus: "single",
+      state: "NY",
+      zip: "10024",
+    });
+    assert.ok(Math.abs(result.localTax - 95.08) < 1);
+  });
+});
+
 describe("International engines", () => {
   it("UK Scotland withholds differently from England", () => {
     const base = {

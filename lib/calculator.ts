@@ -159,6 +159,8 @@ export function calculatePaycheck(input: CalculatorInput): CalculatorResult {
     const local = calculateLocalTax(fitWagesAnnual, {
       zip,
       customRate: localTaxRate,
+      filingStatus,
+      state,
     });
     localTaxAnnual = local.annual;
 
@@ -215,6 +217,16 @@ export function calculatePaycheck(input: CalculatorInput): CalculatorResult {
       accuracyNotes.push(
         "CA SDI uses the EDD employee rate (1.3% for 2026, no wage cap)."
       );
+    }
+    if (state === "NY") {
+      accuracyNotes.push(
+        "New York state tax uses NY brackets with the NY standard deduction (2025 amounts)."
+      );
+      if (zip && localTaxAnnual > 0) {
+        accuracyNotes.push(
+          "NYC resident tax uses the IT-201 progressive schedule on NY taxable income (same base as state tax)."
+        );
+      }
     }
     if (bonusSupplemental && bonusPerPeriod > 0) {
       accuracyNotes.push(

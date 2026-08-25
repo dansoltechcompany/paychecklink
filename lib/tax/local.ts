@@ -1,4 +1,6 @@
-import type { StateCode } from "../types";
+import type { FilingStatus, StateCode } from "../types";
+import { calculateNycLocalTax, isNycZip } from "./nyc-local";
+import { getStateTaxableIncome } from "./state";
 
 /**
  * Local / city income tax estimates for common US payroll localities.
@@ -12,15 +14,8 @@ export interface LocalTaxInfo {
   note?: string;
 }
 
-/** Representative ZIPs for major local income-tax cities */
+/** Representative ZIPs for major local income-tax cities (non-NYC) */
 export const LOCAL_TAX_BY_ZIP: Record<string, LocalTaxInfo> = {
-  // New York City
-  "10001": { name: "New York City, NY", rate: 0.0485, state: "NY", note: "NYC resident local tax (approx.)" },
-  "10002": { name: "New York City, NY", rate: 0.0485, state: "NY" },
-  "10013": { name: "New York City, NY", rate: 0.0485, state: "NY" },
-  "11201": { name: "New York City, NY", rate: 0.0485, state: "NY" },
-  "10451": { name: "New York City, NY", rate: 0.0485, state: "NY" },
-  "10301": { name: "New York City, NY", rate: 0.0485, state: "NY" },
   // Philadelphia
   "19103": { name: "Philadelphia, PA", rate: 0.0375, state: "PA", note: "City wage tax (resident approx.)" },
   "19107": { name: "Philadelphia, PA", rate: 0.0375, state: "PA" },
@@ -61,12 +56,25 @@ export const LOCAL_TAX_BY_ZIP: Record<string, LocalTaxInfo> = {
 export function lookupLocalTax(zip: string): LocalTaxInfo | null {
   const normalized = zip.trim().slice(0, 5);
   if (!/^\d{5}$/.test(normalized)) return null;
+  if (isNycZip(normalized)) {
+    return {
+      name: "New York City, NY",
+      rate: 0,
+      state: "NY",
+      note: "NYC resident tax (progressive schedule on NY taxable income)",
+    };
+  }
   return LOCAL_TAX_BY_ZIP[normalized] ?? null;
 }
 
 export function calculateLocalTax(
   annualTaxableWages: number,
-  options: { zip?: string; customRate?: number }
+  options: {
+    zip?: string;
+    customRate?: number;
+    filingStatus?: FilingStatus;
+    state?: StateCode;
+  }
 ): { annual: number; rate: number; label: string } {
   if (options.customRate != null && options.customRate > 0) {
     return {
@@ -77,6 +85,25 @@ export function calculateLocalTax(
   }
   if (options.zip) {
     const info = lookupLocalTax(options.zip);
+    if (
+      info &&
+      options.state === "NY" &&
+      options.filingStatus &&
+      isNycZip(options.zip)
+    ) {
+      const nyTaxable = getStateTaxableIncome(
+        annualTaxableWages,
+        "NY",
+        options.filingStatus,
+        0
+      );
+      const annual = calculateNycLocalTax(nyTaxable, options.filingStatus);
+      return {
+        annual,
+        rate: nyTaxable > 0 ? annual / nyTaxable : 0,
+        label: "NYC resident tax — New York City, NY",
+      };
+    }
     if (info && info.rate > 0) {
       return {
         annual: annualTaxableWages * info.rate,

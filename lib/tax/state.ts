@@ -102,7 +102,26 @@ export const STATE_TAX: Record<StateCode, StateTaxConfig> = {
   NH: { type: "none" },
   NJ: { type: "progressive", brackets: [{ upTo: 20000, rate: 0.014 }, { upTo: 35000, rate: 0.0175 }, { upTo: 40000, rate: 0.035 }, { upTo: 75000, rate: 0.05525 }, { upTo: 500000, rate: 0.0637 }, { upTo: 1000000, rate: 0.0897 }, { upTo: Infinity, rate: 0.1075 }] },
   NM: { type: "progressive", brackets: [{ upTo: 5500, rate: 0.017 }, { upTo: 11000, rate: 0.032 }, { upTo: 16000, rate: 0.047 }, { upTo: 210000, rate: 0.049 }, { upTo: Infinity, rate: 0.059 }] },
-  NY: { type: "progressive", brackets: [{ upTo: 8500, rate: 0.04 }, { upTo: 11700, rate: 0.045 }, { upTo: 13900, rate: 0.0525 }, { upTo: 80650, rate: 0.055 }, { upTo: 215400, rate: 0.06 }, { upTo: 1077550, rate: 0.0685 }, { upTo: 5000000, rate: 0.0965 }, { upTo: 25000000, rate: 0.103 }, { upTo: Infinity, rate: 0.109 }] },
+  NY: {
+    type: "progressive",
+    brackets: [
+      { upTo: 8500, rate: 0.04 },
+      { upTo: 11700, rate: 0.045 },
+      { upTo: 13900, rate: 0.0525 },
+      { upTo: 80650, rate: 0.055 },
+      { upTo: 215400, rate: 0.06 },
+      { upTo: 1077550, rate: 0.0685 },
+      { upTo: 5000000, rate: 0.0965 },
+      { upTo: 25000000, rate: 0.103 },
+      { upTo: Infinity, rate: 0.109 },
+    ],
+    // NY State standard deduction (2025, Form IT-201)
+    standardDeduction: {
+      single: 8000,
+      married: 16050,
+      head: 11200,
+    },
+  },
   NC: { type: "flat", rate: 0.045 },
   ND: { type: "progressive", brackets: [{ upTo: 44725, rate: 0.0195 }, { upTo: 225975, rate: 0.025 }, { upTo: Infinity, rate: 0.0259 }] },
   OH: { type: "progressive", brackets: [{ upTo: 26050, rate: 0.0 }, { upTo: 100000, rate: 0.0275 }, { upTo: Infinity, rate: 0.035 }] },
@@ -145,19 +164,36 @@ export function calculateStateTax(
   filingStatus: FilingStatus,
   preTaxDeductions = 0
 ): number {
+  const taxable = getStateTaxableIncome(
+    annualGross,
+    state,
+    filingStatus,
+    preTaxDeductions
+  );
   const config = STATE_TAX[state];
-  const taxable = Math.max(0, annualGross - preTaxDeductions);
 
   if (config.type === "none") return 0;
   if (config.type === "flat") return taxable * config.rate;
 
-  let deduction = 0;
-  if (config.standardDeduction) {
-    deduction = config.standardDeduction[filingStatus];
-  }
   const brackets =
     config.bracketsByStatus?.[filingStatus] ?? config.brackets;
-  return calcProgressive(Math.max(0, taxable - deduction), brackets);
+  return calcProgressive(taxable, brackets);
+}
+
+/** Taxable income after state standard deduction (if configured). */
+export function getStateTaxableIncome(
+  annualGross: number,
+  state: StateCode,
+  filingStatus: FilingStatus,
+  preTaxDeductions = 0
+): number {
+  const config = STATE_TAX[state];
+  const wages = Math.max(0, annualGross - preTaxDeductions);
+  if (config.type !== "progressive" || !config.standardDeduction) {
+    return wages;
+  }
+  const deduction = config.standardDeduction[filingStatus] ?? 0;
+  return Math.max(0, wages - deduction);
 }
 
 export function hasStateIncomeTax(state: StateCode): boolean {
