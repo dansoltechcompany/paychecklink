@@ -5,7 +5,12 @@ type Bracket = { upTo: number; rate: number };
 
 type StateTaxConfig =
   | { type: "none" }
-  | { type: "flat"; rate: number }
+  | {
+      type: "flat";
+      rate: number;
+      /** Optional state standard deduction (Tax Foundation / state DoR 2026) */
+      standardDeduction?: Record<FilingStatus, number>;
+    }
   | {
       type: "progressive";
       brackets: Bracket[];
@@ -13,6 +18,15 @@ type StateTaxConfig =
       bracketsByStatus?: Partial<Record<FilingStatus, Bracket[]>>;
       standardDeduction?: Record<FilingStatus, number>;
     };
+
+/** Shared helper — head of household uses single amounts when state does not publish separate HOH. */
+function sd(
+  single: number,
+  married: number,
+  head = single
+): Record<FilingStatus, number> {
+  return { single, married, head };
+}
 
 /**
  * FTB 2025 Schedule X — Single / Married filing separately
@@ -56,12 +70,36 @@ const CA_SCHEDULE_Z: Bracket[] = [
   { upTo: Infinity, rate: 0.123 },
 ];
 
-/** Simplified 2026 state income tax configs */
+/**
+ * 2026 state income tax configs.
+ * Primary source: Tax Foundation, State Income Tax Rates and Brackets 2026
+ * (as of Jan 1, 2026) — compiled from state statutes, forms, and instructions.
+ * https://taxfoundation.org/data/all/state/state-income-tax-rates-2026/
+ *
+ * CA / NY keep FTB / IT-201 schedules verified separately (do not regress).
+ * Personal exemption credits are modeled for CA only; other states use rate
+ * tables ± standard deduction where listed (exemptions noted in methodology).
+ */
 export const STATE_TAX: Record<StateCode, StateTaxConfig> = {
-  AL: { type: "progressive", brackets: [{ upTo: 500, rate: 0.02 }, { upTo: 3000, rate: 0.04 }, { upTo: Infinity, rate: 0.05 }] },
+  AL: {
+    type: "progressive",
+    brackets: [
+      { upTo: 500, rate: 0.02 },
+      { upTo: 3000, rate: 0.04 },
+      { upTo: Infinity, rate: 0.05 },
+    ],
+    standardDeduction: sd(3000, 8500),
+  },
   AK: { type: "none" },
-  AZ: { type: "flat", rate: 0.025 },
-  AR: { type: "progressive", brackets: [{ upTo: 4300, rate: 0.02 }, { upTo: 8500, rate: 0.04 }, { upTo: Infinity, rate: 0.044 }] },
+  AZ: { type: "flat", rate: 0.025, standardDeduction: sd(8350, 16700) },
+  AR: {
+    type: "progressive",
+    brackets: [
+      { upTo: 4600, rate: 0.02 },
+      { upTo: Infinity, rate: 0.039 },
+    ],
+    standardDeduction: sd(2470, 4940),
+  },
   CA: {
     type: "progressive",
     brackets: CA_SCHEDULE_X,
@@ -70,39 +108,175 @@ export const STATE_TAX: Record<StateCode, StateTaxConfig> = {
       married: CA_SCHEDULE_Y,
       head: CA_SCHEDULE_Z,
     },
-    // FTB 2025 standard deduction (Form 540)
+    // FTB 2025 standard deduction (Form 540) — verified separately
     standardDeduction: {
       single: 5706,
       married: 11412,
       head: 11412,
     },
   },
-  CO: { type: "flat", rate: 0.044 },
-  CT: { type: "progressive", brackets: [{ upTo: 10000, rate: 0.02 }, { upTo: 50000, rate: 0.045 }, { upTo: 100000, rate: 0.055 }, { upTo: 200000, rate: 0.06 }, { upTo: 250000, rate: 0.065 }, { upTo: 500000, rate: 0.069 }, { upTo: Infinity, rate: 0.0699 }] },
-  DE: { type: "progressive", brackets: [{ upTo: 2000, rate: 0.0 }, { upTo: 5000, rate: 0.022 }, { upTo: 10000, rate: 0.039 }, { upTo: 20000, rate: 0.048 }, { upTo: 25000, rate: 0.052 }, { upTo: 60000, rate: 0.0555 }, { upTo: Infinity, rate: 0.066 }] },
+  CO: { type: "flat", rate: 0.044, standardDeduction: sd(16100, 32200) },
+  CT: {
+    type: "progressive",
+    brackets: [
+      { upTo: 10000, rate: 0.02 },
+      { upTo: 50000, rate: 0.045 },
+      { upTo: 100000, rate: 0.055 },
+      { upTo: 200000, rate: 0.06 },
+      { upTo: 250000, rate: 0.065 },
+      { upTo: 500000, rate: 0.069 },
+      { upTo: Infinity, rate: 0.0699 },
+    ],
+  },
+  DE: {
+    type: "progressive",
+    brackets: [
+      { upTo: 2000, rate: 0.0 },
+      { upTo: 5000, rate: 0.022 },
+      { upTo: 10000, rate: 0.039 },
+      { upTo: 20000, rate: 0.048 },
+      { upTo: 25000, rate: 0.052 },
+      { upTo: 60000, rate: 0.0555 },
+      { upTo: Infinity, rate: 0.066 },
+    ],
+    standardDeduction: sd(3250, 6500),
+  },
   FL: { type: "none" },
-  GA: { type: "flat", rate: 0.0539 },
-  HI: { type: "progressive", brackets: [{ upTo: 2400, rate: 0.014 }, { upTo: 4800, rate: 0.032 }, { upTo: 9600, rate: 0.055 }, { upTo: 14400, rate: 0.064 }, { upTo: 19200, rate: 0.068 }, { upTo: 24000, rate: 0.072 }, { upTo: 36000, rate: 0.076 }, { upTo: 48000, rate: 0.079 }, { upTo: 150000, rate: 0.0825 }, { upTo: 175000, rate: 0.09 }, { upTo: 200000, rate: 0.1 }, { upTo: Infinity, rate: 0.11 }] },
-  ID: { type: "flat", rate: 0.058 },
+  GA: { type: "flat", rate: 0.0519, standardDeduction: sd(12000, 24000) },
+  HI: {
+    type: "progressive",
+    brackets: [
+      { upTo: 9600, rate: 0.014 },
+      { upTo: 14400, rate: 0.032 },
+      { upTo: 19200, rate: 0.055 },
+      { upTo: 24000, rate: 0.064 },
+      { upTo: 36000, rate: 0.068 },
+      { upTo: 48000, rate: 0.072 },
+      { upTo: 125000, rate: 0.076 },
+      { upTo: 175000, rate: 0.079 },
+      { upTo: 225000, rate: 0.0825 },
+      { upTo: 275000, rate: 0.09 },
+      { upTo: 325000, rate: 0.1 },
+      { upTo: Infinity, rate: 0.11 },
+    ],
+    standardDeduction: sd(4400, 8800),
+  },
+  ID: { type: "flat", rate: 0.053, standardDeduction: sd(16100, 32200) },
   IL: { type: "flat", rate: 0.0495 },
-  IN: { type: "flat", rate: 0.0305 },
-  IA: { type: "flat", rate: 0.038 },
-  KS: { type: "progressive", brackets: [{ upTo: 15000, rate: 0.052 }, { upTo: 30000, rate: 0.0558 }, { upTo: Infinity, rate: 0.057 }] },
-  KY: { type: "flat", rate: 0.04 },
-  LA: { type: "progressive", brackets: [{ upTo: 12500, rate: 0.0185 }, { upTo: 50000, rate: 0.035 }, { upTo: Infinity, rate: 0.0425 }] },
-  ME: { type: "progressive", brackets: [{ upTo: 26050, rate: 0.058 }, { upTo: 61600, rate: 0.0675 }, { upTo: Infinity, rate: 0.0715 }] },
-  MD: { type: "progressive", brackets: [{ upTo: 1000, rate: 0.02 }, { upTo: 2000, rate: 0.03 }, { upTo: 3000, rate: 0.04 }, { upTo: 100000, rate: 0.0475 }, { upTo: 125000, rate: 0.05 }, { upTo: 150000, rate: 0.0525 }, { upTo: 250000, rate: 0.055 }, { upTo: Infinity, rate: 0.0575 }] },
+  IN: { type: "flat", rate: 0.0295 },
+  IA: { type: "flat", rate: 0.038, standardDeduction: sd(16100, 32200) },
+  KS: {
+    type: "progressive",
+    brackets: [
+      { upTo: 23000, rate: 0.052 },
+      { upTo: Infinity, rate: 0.0558 },
+    ],
+    standardDeduction: sd(3605, 8240),
+  },
+  KY: { type: "flat", rate: 0.035, standardDeduction: sd(3360, 3360) },
+  LA: { type: "flat", rate: 0.03, standardDeduction: sd(12875, 25750) },
+  ME: {
+    type: "progressive",
+    brackets: [
+      { upTo: 27399, rate: 0.058 },
+      { upTo: 64849, rate: 0.0675 },
+      { upTo: Infinity, rate: 0.0715 },
+    ],
+    standardDeduction: sd(8350, 16700),
+  },
+  MD: {
+    type: "progressive",
+    brackets: [
+      { upTo: 1000, rate: 0.02 },
+      { upTo: 2000, rate: 0.03 },
+      { upTo: 3000, rate: 0.04 },
+      { upTo: 100000, rate: 0.0475 },
+      { upTo: 125000, rate: 0.05 },
+      { upTo: 150000, rate: 0.0525 },
+      { upTo: 250000, rate: 0.055 },
+      { upTo: 500000, rate: 0.0575 },
+      { upTo: 1000000, rate: 0.0625 },
+      { upTo: Infinity, rate: 0.065 },
+    ],
+    standardDeduction: sd(3350, 6700),
+  },
   MA: { type: "flat", rate: 0.05 },
   MI: { type: "flat", rate: 0.0425 },
-  MN: { type: "progressive", brackets: [{ upTo: 31690, rate: 0.0535 }, { upTo: 104090, rate: 0.068 }, { upTo: 193240, rate: 0.0785 }, { upTo: Infinity, rate: 0.0985 }] },
-  MS: { type: "progressive", brackets: [{ upTo: 5000, rate: 0.0 }, { upTo: 10000, rate: 0.03 }, { upTo: Infinity, rate: 0.05 }] },
-  MO: { type: "progressive", brackets: [{ upTo: 1207, rate: 0.0 }, { upTo: 2414, rate: 0.02 }, { upTo: 3621, rate: 0.025 }, { upTo: 4828, rate: 0.03 }, { upTo: 6035, rate: 0.035 }, { upTo: 7242, rate: 0.04 }, { upTo: 8449, rate: 0.045 }, { upTo: Infinity, rate: 0.048 }] },
-  MT: { type: "progressive", brackets: [{ upTo: 20500, rate: 0.047 }, { upTo: Infinity, rate: 0.059 }] },
-  NE: { type: "progressive", brackets: [{ upTo: 3860, rate: 0.0246 }, { upTo: 23000, rate: 0.0351 }, { upTo: 37000, rate: 0.0501 }, { upTo: Infinity, rate: 0.0584 }] },
+  MN: {
+    type: "progressive",
+    brackets: [
+      { upTo: 33310, rate: 0.0535 },
+      { upTo: 109430, rate: 0.068 },
+      { upTo: 203150, rate: 0.0785 },
+      { upTo: Infinity, rate: 0.0985 },
+    ],
+    standardDeduction: sd(15300, 30600),
+  },
+  MS: {
+    type: "progressive",
+    brackets: [
+      { upTo: 10000, rate: 0.0 },
+      { upTo: Infinity, rate: 0.04 },
+    ],
+    standardDeduction: sd(2300, 4600),
+  },
+  MO: {
+    type: "progressive",
+    brackets: [
+      { upTo: 1348, rate: 0.0 },
+      { upTo: 2696, rate: 0.02 },
+      { upTo: 4044, rate: 0.025 },
+      { upTo: 5392, rate: 0.03 },
+      { upTo: 6740, rate: 0.035 },
+      { upTo: 8088, rate: 0.04 },
+      { upTo: 9436, rate: 0.045 },
+      { upTo: Infinity, rate: 0.047 },
+    ],
+    standardDeduction: sd(16100, 32200),
+  },
+  MT: {
+    type: "progressive",
+    brackets: [
+      { upTo: 47500, rate: 0.047 },
+      { upTo: Infinity, rate: 0.0565 },
+    ],
+    standardDeduction: sd(16100, 32200),
+  },
+  NE: {
+    type: "progressive",
+    brackets: [
+      { upTo: 4130, rate: 0.0246 },
+      { upTo: 24760, rate: 0.0351 },
+      { upTo: Infinity, rate: 0.0455 },
+    ],
+    standardDeduction: sd(8850, 17700),
+  },
   NV: { type: "none" },
   NH: { type: "none" },
-  NJ: { type: "progressive", brackets: [{ upTo: 20000, rate: 0.014 }, { upTo: 35000, rate: 0.0175 }, { upTo: 40000, rate: 0.035 }, { upTo: 75000, rate: 0.05525 }, { upTo: 500000, rate: 0.0637 }, { upTo: 1000000, rate: 0.0897 }, { upTo: Infinity, rate: 0.1075 }] },
-  NM: { type: "progressive", brackets: [{ upTo: 5500, rate: 0.017 }, { upTo: 11000, rate: 0.032 }, { upTo: 16000, rate: 0.047 }, { upTo: 210000, rate: 0.049 }, { upTo: Infinity, rate: 0.059 }] },
+  NJ: {
+    type: "progressive",
+    brackets: [
+      { upTo: 20000, rate: 0.014 },
+      { upTo: 35000, rate: 0.0175 },
+      { upTo: 40000, rate: 0.035 },
+      { upTo: 75000, rate: 0.0553 },
+      { upTo: 500000, rate: 0.0637 },
+      { upTo: 1000000, rate: 0.0897 },
+      { upTo: Infinity, rate: 0.1075 },
+    ],
+  },
+  NM: {
+    type: "progressive",
+    brackets: [
+      { upTo: 5500, rate: 0.015 },
+      { upTo: 16500, rate: 0.032 },
+      { upTo: 33500, rate: 0.043 },
+      { upTo: 66500, rate: 0.047 },
+      { upTo: 210000, rate: 0.049 },
+      { upTo: Infinity, rate: 0.059 },
+    ],
+    standardDeduction: sd(16100, 32200),
+  },
   NY: {
     type: "progressive",
     brackets: [
@@ -116,30 +290,114 @@ export const STATE_TAX: Record<StateCode, StateTaxConfig> = {
       { upTo: 25000000, rate: 0.103 },
       { upTo: Infinity, rate: 0.109 },
     ],
-    // NY State standard deduction (2025, Form IT-201)
+    // NY State standard deduction (2025, Form IT-201) — verified separately
     standardDeduction: {
       single: 8000,
       married: 16050,
       head: 11200,
     },
   },
-  NC: { type: "flat", rate: 0.045 },
-  ND: { type: "progressive", brackets: [{ upTo: 44725, rate: 0.0195 }, { upTo: 225975, rate: 0.025 }, { upTo: Infinity, rate: 0.0259 }] },
-  OH: { type: "progressive", brackets: [{ upTo: 26050, rate: 0.0 }, { upTo: 100000, rate: 0.0275 }, { upTo: Infinity, rate: 0.035 }] },
-  OK: { type: "progressive", brackets: [{ upTo: 1000, rate: 0.0025 }, { upTo: 2500, rate: 0.0075 }, { upTo: 3750, rate: 0.0125 }, { upTo: 4900, rate: 0.0175 }, { upTo: 7200, rate: 0.0225 }, { upTo: Infinity, rate: 0.0475 }] },
-  OR: { type: "progressive", brackets: [{ upTo: 4050, rate: 0.0475 }, { upTo: 10200, rate: 0.0675 }, { upTo: 125000, rate: 0.0875 }, { upTo: Infinity, rate: 0.099 }] },
+  NC: { type: "flat", rate: 0.0399, standardDeduction: sd(12750, 25500) },
+  ND: {
+    type: "progressive",
+    brackets: [
+      { upTo: 48475, rate: 0.0 },
+      { upTo: 244825, rate: 0.0195 },
+      { upTo: Infinity, rate: 0.025 },
+    ],
+    standardDeduction: sd(16100, 32200),
+  },
+  OH: {
+    type: "progressive",
+    brackets: [
+      { upTo: 26050, rate: 0.0 },
+      { upTo: Infinity, rate: 0.0275 },
+    ],
+  },
+  OK: {
+    type: "progressive",
+    brackets: [
+      { upTo: 3750, rate: 0.0 },
+      { upTo: 4900, rate: 0.025 },
+      { upTo: 7200, rate: 0.035 },
+      { upTo: Infinity, rate: 0.045 },
+    ],
+    standardDeduction: sd(6350, 12700),
+  },
+  OR: {
+    type: "progressive",
+    brackets: [
+      { upTo: 4550, rate: 0.0475 },
+      { upTo: 11400, rate: 0.0675 },
+      { upTo: 125000, rate: 0.0875 },
+      { upTo: Infinity, rate: 0.099 },
+    ],
+    standardDeduction: sd(2910, 5820),
+  },
   PA: { type: "flat", rate: 0.0307 },
-  RI: { type: "progressive", brackets: [{ upTo: 77450, rate: 0.0375 }, { upTo: 176050, rate: 0.0475 }, { upTo: Infinity, rate: 0.0599 }] },
-  SC: { type: "progressive", brackets: [{ upTo: 3460, rate: 0.0 }, { upTo: 17330, rate: 0.03 }, { upTo: Infinity, rate: 0.0625 }] },
+  RI: {
+    type: "progressive",
+    brackets: [
+      { upTo: 82050, rate: 0.0375 },
+      { upTo: 186450, rate: 0.0475 },
+      { upTo: Infinity, rate: 0.0599 },
+    ],
+    standardDeduction: sd(11200, 22400),
+  },
+  SC: {
+    type: "progressive",
+    brackets: [
+      { upTo: 3640, rate: 0.0 },
+      { upTo: 18230, rate: 0.03 },
+      { upTo: Infinity, rate: 0.06 },
+    ],
+    standardDeduction: sd(8350, 16700),
+  },
   SD: { type: "none" },
   TN: { type: "none" },
   TX: { type: "none" },
   UT: { type: "flat", rate: 0.045 },
-  VT: { type: "progressive", brackets: [{ upTo: 45400, rate: 0.0335 }, { upTo: 110050, rate: 0.066 }, { upTo: 229550, rate: 0.076 }, { upTo: Infinity, rate: 0.0875 }] },
-  VA: { type: "progressive", brackets: [{ upTo: 3000, rate: 0.02 }, { upTo: 5000, rate: 0.03 }, { upTo: 17000, rate: 0.05 }, { upTo: Infinity, rate: 0.0575 }] },
+  VT: {
+    type: "progressive",
+    brackets: [
+      { upTo: 49400, rate: 0.0335 },
+      { upTo: 119700, rate: 0.066 },
+      { upTo: 249700, rate: 0.076 },
+      { upTo: Infinity, rate: 0.0875 },
+    ],
+    standardDeduction: sd(7650, 15300),
+  },
+  VA: {
+    type: "progressive",
+    brackets: [
+      { upTo: 3000, rate: 0.02 },
+      { upTo: 5000, rate: 0.03 },
+      { upTo: 17000, rate: 0.05 },
+      { upTo: Infinity, rate: 0.0575 },
+    ],
+    standardDeduction: sd(8750, 17500),
+  },
   WA: { type: "none" },
-  WV: { type: "progressive", brackets: [{ upTo: 10000, rate: 0.0222 }, { upTo: 25000, rate: 0.0296 }, { upTo: 40000, rate: 0.0333 }, { upTo: 60000, rate: 0.0444 }, { upTo: Infinity, rate: 0.0482 }] },
-  WI: { type: "progressive", brackets: [{ upTo: 14320, rate: 0.035 }, { upTo: 28640, rate: 0.044 }, { upTo: 315310, rate: 0.053 }, { upTo: Infinity, rate: 0.0765 }] },
+  WV: {
+    type: "progressive",
+    brackets: [
+      { upTo: 10000, rate: 0.0222 },
+      { upTo: 25000, rate: 0.0296 },
+      { upTo: 40000, rate: 0.0333 },
+      { upTo: 60000, rate: 0.0444 },
+      { upTo: Infinity, rate: 0.0482 },
+    ],
+  },
+  WI: {
+    type: "progressive",
+    brackets: [
+      { upTo: 15110, rate: 0.035 },
+      { upTo: 51950, rate: 0.044 },
+      { upTo: 332720, rate: 0.053 },
+      { upTo: Infinity, rate: 0.0765 },
+    ],
+    standardDeduction: sd(13960, 25840),
+  },
   WY: { type: "none" },
 };
 
@@ -200,12 +458,20 @@ export function getStateTaxableIncome(
 ): number {
   const config = STATE_TAX[state];
   const wages = Math.max(0, annualGross - preTaxDeductions);
-  if (config.type !== "progressive" || !config.standardDeduction) {
-    return wages;
+  if (config.type === "none") return wages;
+  if (
+    (config.type === "progressive" || config.type === "flat") &&
+    config.standardDeduction
+  ) {
+    const deduction = config.standardDeduction[filingStatus] ?? 0;
+    return Math.max(0, wages - deduction);
   }
-  const deduction = config.standardDeduction[filingStatus] ?? 0;
-  return Math.max(0, wages - deduction);
+  return wages;
 }
+
+/** Citation for 2026 state table refresh (non-CA/NY). */
+export const STATE_TAX_SOURCE_2026 =
+  "Tax Foundation, State Income Tax Rates and Brackets 2026 (as of Jan 1, 2026)";
 
 export function hasStateIncomeTax(state: StateCode): boolean {
   return STATE_TAX[state].type !== "none";

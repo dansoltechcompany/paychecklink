@@ -58,15 +58,17 @@ export default function MethodologyContent() {
               reduce FIT and FICA.
             </li>
             <li>
-              <strong>State income tax:</strong> current state rate tables (flat
-              or progressive) for all 50 states. California uses FTB Schedule
-              X/Y/Z, the California standard deduction, and Form 540 personal
-              exemption credits ($153 single/HOH; $306 married) with the official
-              AGI Limitation Worksheet phase-out ($6 per exemption count per
-              $2,500 of AGI over the filing-status threshold). New York uses NY
-              brackets plus the NY standard deduction; NYC resident tax uses the
-              progressive IT-201 city schedule on NY taxable income when a NYC
-              ZIP is entered.
+              <strong>State income tax:</strong> 2026 rate tables for all 50
+              states (Tax Foundation compilation of state statutes/forms as of
+              Jan 1, 2026), including standard deductions where the state
+              publishes them. California uses FTB Schedule X/Y/Z, the California
+              standard deduction, and Form 540 personal exemption credits
+              ($153 single/HOH; $306 married) with the official AGI Limitation
+              Worksheet phase-out. New York uses NY brackets plus the NY
+              standard deduction; NYC resident tax uses the progressive IT-201
+              city schedule on NY taxable income when a NYC ZIP is entered.
+              Personal exemption credits outside California are not fully
+              modeled (rates ± standard deduction only).
             </li>
             <li>
               <strong>California SDI:</strong> EDD employee rate (1.3% for 2026,
@@ -75,10 +77,15 @@ export default function MethodologyContent() {
             </li>
             <li>
               <strong>Local tax:</strong> ZIP lookup is visible in the main
-              calculator (not only under advanced options). New York pages
-              preload ZIP 10001 so NYC resident tax is included by default;
-              clear the ZIP for NY state–only estimates. Other cities (e.g.
-              Philadelphia) use mapped ZIPs or a custom local %.
+              calculator. New York pages preload ZIP 10001 for NYC resident tax.
+              <strong> Maryland:</strong> county/city local income tax is
+              mandatory for every resident (Comptroller 2026 rates 2.25%–3.30%);
+              enter a MD ZIP for your county or we default to 3.20%.
+              <strong> Not fully modeled (enter custom %):</strong> Pennsylvania
+              EIT across ~2,500 municipalities/school districts (Philly /
+              Pittsburgh samples only); Ohio municipal / RITA (three city
+              samples); Kentucky county occupational taxes (Louisville sample
+              only). Indiana county locals are not mapped.
             </li>
           </ul>
         </section>
@@ -141,11 +148,28 @@ export default function MethodologyContent() {
                 rel="noopener noreferrer"
               >
                 New York DTF
+              </a>,{" "}
+              <a
+                href="https://www.marylandcomptroller.gov/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Maryland Comptroller
               </a>
             </li>
             <li>
+              <a
+                href="https://taxfoundation.org/data/all/state/state-income-tax-rates-2026/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Tax Foundation — 2026 State Income Tax Rates and Brackets
+              </a>{" "}
+              (compiled from state statutes/forms as of Jan 1, 2026)
+            </li>
+            <li>
               Published city/county earned-income or local income tax rates
-              (NYC, Philadelphia, Ohio municipals, etc.)
+              (NYC, Maryland counties, Philadelphia, Ohio municipals, etc.)
             </li>
             <li>
               <a

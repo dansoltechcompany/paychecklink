@@ -230,6 +230,26 @@ export function calculatePaycheck(input: CalculatorInput): CalculatorResult {
         );
       }
     }
+    if (state === "MD") {
+      accuracyNotes.push(
+        "Maryland state tax uses Comptroller brackets with the MD standard deduction. Local county/city income tax is mandatory (2.25%–3.30%); enter a Maryland ZIP for your county, otherwise 3.20% default applies."
+      );
+    }
+    if (state === "PA") {
+      accuracyNotes.push(
+        "Pennsylvania state tax is a flat 3.07% (no standard deduction). Local Earned Income Tax (EIT) varies by municipality/school district (~2,500 jurisdictions) — only Philadelphia/Pittsburgh samples are mapped; enter a custom local % for other PA localities."
+      );
+    }
+    if (state === "OH") {
+      accuracyNotes.push(
+        "Ohio state tax uses the 2026 structure (0% to $26,050; 2.75% above). Municipal income tax (RITA/cities) is only sampled for Cincinnati/Columbus/Cleveland — enter a custom local % for other Ohio cities."
+      );
+    }
+    if (state === "KY") {
+      accuracyNotes.push(
+        "Kentucky state tax is a flat 3.5% (2026) after the KY standard deduction. County occupational license taxes are not fully mapped (Louisville sample only) — enter a custom local % when applicable."
+      );
+    }
     if (bonusSupplemental && bonusPerPeriod > 0) {
       accuracyNotes.push(
         "Bonus uses IRS supplemental flat withholding rate (22%)."
