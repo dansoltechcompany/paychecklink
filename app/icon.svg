@@ -1,22 +1,28 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
   <rect width="32" height="32" rx="8" fill="#0466c8"/>
+  <!-- Paystub -->
+  <rect x="4.5" y="6.5" width="13.5" height="19" rx="2.5" stroke="#ffffff" stroke-width="1.85"/>
+  <path d="M7.5 9.8h7.2M7.5 12.2h5" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Dollar -->
   <path
-    d="M14.2 6.2v19.6M18.9 10.6H12.7a2.55 2.55 0 1 0 0 5.1h3.4a2.55 2.55 0 1 1 0 5.1H10.5"
+    d="M11.25 14v8.2M14.2 15.7H9.9a1.75 1.75 0 1 0 0 3.5h2.25a1.75 1.75 0 1 1 0 3.5H9.35"
     stroke="#ffffff"
-    stroke-width="2.2"
+    stroke-width="1.7"
     stroke-linecap="round"
     stroke-linejoin="round"
   />
+  <!-- Link -->
   <path
-    d="M20.4 19.2a2.55 2.55 0 1 0 0 5.1 2.55 2.55 0 0 0 1.85-.78M25.7 19.2a2.55 2.55 0 1 1 0 5.1 2.55 2.55 0 0 1-1.85-.78"
+    d="M18.4 16.2a3 3 0 0 1 4.25 0l.75.75a3 3 0 0 1 0 4.25"
     stroke="#ffffff"
     stroke-width="1.85"
     stroke-linecap="round"
   />
   <path
-    d="M22.35 21.75h1.4"
+    d="M25.4 23.4a3 3 0 0 1-4.25 0l-.75-.75a3 3 0 0 1 0-4.25"
     stroke="#ffffff"
     stroke-width="1.85"
     stroke-linecap="round"
   />
+  <path d="M20.55 19.85h2.1" stroke="#ffffff" stroke-width="1.85" stroke-linecap="round"/>
 </svg>
