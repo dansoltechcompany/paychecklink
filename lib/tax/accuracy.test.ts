@@ -291,6 +291,24 @@ describe("California accuracy (FTB + EDD)", () => {
     assert.equal(getCaExemptionCredits("married", 0, 504411), 306);
     assert.equal(getCaExemptionCredits("married", 0, 504412), 294); // 306 − 2×6
   });
+
+  it("$150k MFJ CA biweekly hits 22% federal + Schedule Y + full $306 credit", () => {
+    const result = calculatePaycheck({
+      country: "US",
+      payType: "salary",
+      grossAmount: 150000 / 26,
+      payFrequency: "biweekly",
+      filingStatus: "married",
+      state: "CA",
+    });
+    assert.ok(Math.abs(result.grossPay - 5769.23) < 0.01);
+    assert.ok(Math.abs(result.federalTax - 590) < 0.01);
+    assert.ok(Math.abs(result.stateTax - 213.43) < 0.02);
+    assert.ok(Math.abs(result.socialSecurity - 357.69) < 0.01);
+    assert.ok(Math.abs(result.medicare - 83.65) < 0.01);
+    assert.ok(Math.abs(result.stateDisability - 75) < 0.01);
+    assert.ok(Math.abs(result.netPay - 4449.46) < 0.02);
+  });
 });
 
 describe("New York & NYC accuracy", () => {
