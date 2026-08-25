@@ -162,7 +162,7 @@ const en: Dictionary = {
   "ui.breadcrumbStates": "States",
   "states.title": "US State Paycheck Calculators",
   "states.subtitle":
-    "Choose your state for a salary paycheck calculator with that state’s tax rules preloaded.",
+    "Choose your US state for a salary paycheck calculator with that state’s tax rules preloaded.",
   "states.allStates": "All 50 States",
   "states.noTax": "No income tax",
 };
