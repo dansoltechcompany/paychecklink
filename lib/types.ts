@@ -93,6 +93,8 @@ export interface CalculatorResult {
   localTax: number;
   socialSecurity: number;
   medicare: number;
+  /** CA SDI / similar state disability payroll tax (per period) */
+  stateDisability: number;
   preTaxDeductions: number;
   postTaxDeductions: number;
   totalTaxes: number;

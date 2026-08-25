@@ -8,6 +8,8 @@ import { calculatePaycheck } from "../calculator";
 import { calculateFederalWithholding } from "./federal-withholding";
 import { calculateFICA } from "./fica";
 import { lookupLocalTax } from "./local";
+import { calculateStateTax } from "./state";
+import { calculateCaSdi } from "./ca-sdi";
 
 describe("FICA", () => {
   it("applies 6.2% SS up to wage base", () => {
@@ -170,6 +172,7 @@ describe("End-to-end US paycheck", () => {
       state: "TX",
     });
     assert.equal(tx.stateTax, 0);
+    assert.equal(tx.stateDisability, 0);
     assert.ok(tx.federalTax > 0);
     assert.ok(tx.socialSecurity > 0);
     assert.ok(tx.netPay > 0);
@@ -177,6 +180,39 @@ describe("End-to-end US paycheck", () => {
   });
 });
 
+describe("California accuracy (FTB + EDD)", () => {
+  it("applies FTB Schedule X + CA standard deduction on $75k single", () => {
+    const annual = calculateStateTax(75000, "CA", "single", 0);
+    // Taxable $69,294 → Schedule X 8% bracket: $1,987.41 + 8% × $11,752 = $2,927.57
+    assert.ok(Math.abs(annual - 2927.57) < 0.5);
+  });
+
+  it("withholds CA SDI at 1.3% with no wage cap", () => {
+    assert.equal(calculateCaSdi(75000), 975);
+    assert.equal(calculateCaSdi(200000), 2600);
+  });
+
+  it("$75k single CA biweekly includes SDI and lower CA tax than pre-fix", () => {
+    const result = calculatePaycheck({
+      country: "US",
+      payType: "salary",
+      grossAmount: 75000 / 26,
+      payFrequency: "biweekly",
+      filingStatus: "single",
+      state: "CA",
+    });
+    // SDI: $975 / 26 ≈ $37.50
+    assert.ok(Math.abs(result.stateDisability - 37.5) < 0.05);
+    assert.ok(result.breakdown.some((b) => b.label === "CA SDI (1.3%)"));
+    // CA state tax ≈ $2,927.57 / 26 ≈ $112.60
+    assert.ok(Math.abs(result.stateTax - 112.6) < 0.5);
+    // FICA still present
+    assert.ok(Math.abs(result.socialSecurity - 178.85) < 0.05);
+    assert.ok(Math.abs(result.medicare - 41.83) < 0.05);
+    assert.ok(result.netPay > 0);
+    assert.ok(result.netPay < result.grossPay);
+  });
+});
 describe("International engines", () => {
   it("UK Scotland withholds differently from England", () => {
     const base = {

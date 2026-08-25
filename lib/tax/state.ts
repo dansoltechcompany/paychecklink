@@ -1,9 +1,59 @@
 import type { FilingStatus, StateCode } from "../types";
 
+type Bracket = { upTo: number; rate: number };
+
 type StateTaxConfig =
   | { type: "none" }
   | { type: "flat"; rate: number }
-  | { type: "progressive"; brackets: { upTo: number; rate: number }[]; standardDeduction?: Record<FilingStatus, number> };
+  | {
+      type: "progressive";
+      brackets: Bracket[];
+      /** Override brackets by filing status (e.g. CA Schedule X/Y/Z) */
+      bracketsByStatus?: Partial<Record<FilingStatus, Bracket[]>>;
+      standardDeduction?: Record<FilingStatus, number>;
+    };
+
+/**
+ * FTB 2025 Schedule X — Single / Married filing separately
+ * (tax year used for 2026 withholding estimates until FTB publishes 2026 schedules)
+ */
+const CA_SCHEDULE_X: Bracket[] = [
+  { upTo: 11079, rate: 0.01 },
+  { upTo: 26264, rate: 0.02 },
+  { upTo: 41452, rate: 0.04 },
+  { upTo: 57542, rate: 0.06 },
+  { upTo: 72724, rate: 0.08 },
+  { upTo: 371479, rate: 0.093 },
+  { upTo: 445771, rate: 0.103 },
+  { upTo: 742953, rate: 0.113 },
+  { upTo: Infinity, rate: 0.123 },
+];
+
+/** FTB 2025 Schedule Y — Married filing jointly / Qualifying widow(er) */
+const CA_SCHEDULE_Y: Bracket[] = [
+  { upTo: 22158, rate: 0.01 },
+  { upTo: 52528, rate: 0.02 },
+  { upTo: 82904, rate: 0.04 },
+  { upTo: 115084, rate: 0.06 },
+  { upTo: 145448, rate: 0.08 },
+  { upTo: 742958, rate: 0.093 },
+  { upTo: 891542, rate: 0.103 },
+  { upTo: 1485906, rate: 0.113 },
+  { upTo: Infinity, rate: 0.123 },
+];
+
+/** FTB 2025 Schedule Z — Head of household */
+const CA_SCHEDULE_Z: Bracket[] = [
+  { upTo: 22173, rate: 0.01 },
+  { upTo: 52530, rate: 0.02 },
+  { upTo: 67716, rate: 0.04 },
+  { upTo: 83805, rate: 0.06 },
+  { upTo: 98990, rate: 0.08 },
+  { upTo: 505208, rate: 0.093 },
+  { upTo: 606251, rate: 0.103 },
+  { upTo: 1010417, rate: 0.113 },
+  { upTo: Infinity, rate: 0.123 },
+];
 
 /** Simplified 2026 state income tax configs */
 export const STATE_TAX: Record<StateCode, StateTaxConfig> = {
@@ -11,7 +61,21 @@ export const STATE_TAX: Record<StateCode, StateTaxConfig> = {
   AK: { type: "none" },
   AZ: { type: "flat", rate: 0.025 },
   AR: { type: "progressive", brackets: [{ upTo: 4300, rate: 0.02 }, { upTo: 8500, rate: 0.04 }, { upTo: Infinity, rate: 0.044 }] },
-  CA: { type: "progressive", brackets: [{ upTo: 10412, rate: 0.01 }, { upTo: 24684, rate: 0.02 }, { upTo: 38959, rate: 0.04 }, { upTo: 54081, rate: 0.06 }, { upTo: 68350, rate: 0.08 }, { upTo: 349137, rate: 0.093 }, { upTo: 418961, rate: 0.103 }, { upTo: 698271, rate: 0.113 }, { upTo: Infinity, rate: 0.123 }] },
+  CA: {
+    type: "progressive",
+    brackets: CA_SCHEDULE_X,
+    bracketsByStatus: {
+      single: CA_SCHEDULE_X,
+      married: CA_SCHEDULE_Y,
+      head: CA_SCHEDULE_Z,
+    },
+    // FTB 2025 standard deduction (Form 540)
+    standardDeduction: {
+      single: 5706,
+      married: 11412,
+      head: 11412,
+    },
+  },
   CO: { type: "flat", rate: 0.044 },
   CT: { type: "progressive", brackets: [{ upTo: 10000, rate: 0.02 }, { upTo: 50000, rate: 0.045 }, { upTo: 100000, rate: 0.055 }, { upTo: 200000, rate: 0.06 }, { upTo: 250000, rate: 0.065 }, { upTo: 500000, rate: 0.069 }, { upTo: Infinity, rate: 0.0699 }] },
   DE: { type: "progressive", brackets: [{ upTo: 2000, rate: 0.0 }, { upTo: 5000, rate: 0.022 }, { upTo: 10000, rate: 0.039 }, { upTo: 20000, rate: 0.048 }, { upTo: 25000, rate: 0.052 }, { upTo: 60000, rate: 0.0555 }, { upTo: Infinity, rate: 0.066 }] },
@@ -91,7 +155,9 @@ export function calculateStateTax(
   if (config.standardDeduction) {
     deduction = config.standardDeduction[filingStatus];
   }
-  return calcProgressive(Math.max(0, taxable - deduction), config.brackets);
+  const brackets =
+    config.bracketsByStatus?.[filingStatus] ?? config.brackets;
+  return calcProgressive(Math.max(0, taxable - deduction), brackets);
 }
 
 export function hasStateIncomeTax(state: StateCode): boolean {

@@ -1,6 +1,7 @@
 import { calculateFederalWithholding } from "./tax/federal-withholding";
 import { calculateFICA } from "./tax/fica";
 import { calculateStateTax } from "./tax/state";
+import { calculateCaSdi } from "./tax/ca-sdi";
 import { calculateLocalTax } from "./tax/local";
 import { calculateUkTax } from "./tax/uk";
 import { calculateCanadaTax } from "./tax/canada";
@@ -43,6 +44,7 @@ function baseResult(country: CountryCode): CalculatorResult {
     localTax: 0,
     socialSecurity: 0,
     medicare: 0,
+    stateDisability: 0,
     preTaxDeductions: 0,
     postTaxDeductions: 0,
     totalTaxes: 0,
@@ -124,6 +126,7 @@ export function calculatePaycheck(input: CalculatorInput): CalculatorResult {
   let localTaxAnnual = 0;
   let socialAnnual = 0;
   let otherAnnual = 0;
+  let disabilityAnnual = 0;
   let breakdownAnnual: { label: string; amount: number }[] = [];
   const accuracyNotes: string[] = [];
 
@@ -165,6 +168,11 @@ export function calculatePaycheck(input: CalculatorInput): CalculatorResult {
     socialAnnual = fica.socialSecurity;
     otherAnnual = fica.medicare;
 
+    if (state === "CA") {
+      // SDI applies to CA wages; Section 125 benefits typically reduce SDI wages
+      disabilityAnnual = calculateCaSdi(ficaWagesAnnual);
+    }
+
     breakdownAnnual = [
       { label: "Federal income tax (Pub 15-T)", amount: incomeTaxAnnual },
       { label: "State income tax", amount: regionalTaxAnnual },
@@ -176,6 +184,12 @@ export function calculatePaycheck(input: CalculatorInput): CalculatorResult {
       { label: "Social Security (6.2%)", amount: socialAnnual },
       { label: "Medicare (1.45%)", amount: otherAnnual }
     );
+    if (disabilityAnnual > 0) {
+      breakdownAnnual.push({
+        label: "CA SDI (1.3%)",
+        amount: disabilityAnnual,
+      });
+    }
 
     accuracyNotes.push(
       "Federal withholding uses IRS Publication 15-T percentage method (W-4 compatible)."
@@ -183,6 +197,14 @@ export function calculatePaycheck(input: CalculatorInput): CalculatorResult {
     accuracyNotes.push(
       "FICA: 401(k) reduces federal income tax only; Section 125 benefits reduce FIT and FICA."
     );
+    if (state === "CA") {
+      accuracyNotes.push(
+        "California state tax uses FTB Schedule X/Y/Z with the California standard deduction."
+      );
+      accuracyNotes.push(
+        "CA SDI uses the EDD employee rate (1.3% for 2026, no wage cap)."
+      );
+    }
     if (bonusSupplemental && bonusPerPeriod > 0) {
       accuracyNotes.push(
         "Bonus uses IRS supplemental flat withholding rate (22%)."
@@ -258,7 +280,8 @@ export function calculatePaycheck(input: CalculatorInput): CalculatorResult {
     regionalTaxAnnual +
     localTaxAnnual +
     socialAnnual +
-    otherAnnual;
+    otherAnnual +
+    disabilityAnnual;
 
   const netAnnual =
     grossAnnual - preTaxTotalAnnual - totalTaxesAnnual - postTaxAnnual;
@@ -271,6 +294,7 @@ export function calculatePaycheck(input: CalculatorInput): CalculatorResult {
   const localTax = fromAnnual(localTaxAnnual, payFrequency);
   const socialSecurity = fromAnnual(socialAnnual, payFrequency);
   const medicare = fromAnnual(otherAnnual, payFrequency);
+  const stateDisability = fromAnnual(disabilityAnnual, payFrequency);
   const totalTaxes = fromAnnual(totalTaxesAnnual, payFrequency);
   const netPay = fromAnnual(netAnnual, payFrequency);
 
@@ -309,6 +333,7 @@ export function calculatePaycheck(input: CalculatorInput): CalculatorResult {
     localTax,
     socialSecurity,
     medicare,
+    stateDisability,
     preTaxDeductions,
     postTaxDeductions: postTaxPerPeriod,
     totalTaxes,
