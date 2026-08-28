@@ -165,6 +165,11 @@ export default function AboutPage() {
             reporting issues with the affected state or country and a sample
             gross pay so we can reproduce the estimate.
           </p>
+          <p>
+            Email{" "}
+            <a href="mailto:info@dansoltech.com">info@dansoltech.com</a>{" "}
+            (Dansol Tech Pvt. Ltd.)
+          </p>
         </section>
 
         <div className="disclaimer">
