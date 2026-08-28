@@ -12,6 +12,7 @@ const CALC_LINKS = [
   { href: "/biweekly-paycheck-calculator", label: "Biweekly" },
   { href: "/methodology", label: "Methodology" },
   { href: "/about", label: "About" },
+  { href: "/privacy", label: "Privacy" },
 ];
 
 const STATE_LINKS = [

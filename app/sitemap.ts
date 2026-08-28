@@ -39,6 +39,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "yearly",
       priority: 0.6,
     },
+    {
+      url: `${SITE_URL}/privacy`,
+      lastModified: now,
+      changeFrequency: "yearly",
+      priority: 0.55,
+    },
     ...slugs.map((slug) => {
       const page = SEO_PAGES.find((p) => p.slug === slug);
       const isVariant = page?.category === "state-variant";
