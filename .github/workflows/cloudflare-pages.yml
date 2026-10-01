@@ -26,7 +26,7 @@ jobs:
       - name: Build static site
         run: npm run build
         env:
-          NEXT_PUBLIC_SITE_URL: https://paychecklink.pages.dev
+          NEXT_PUBLIC_SITE_URL: https://paychecklink.com
 
       - name: Publish to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3

@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   title: `About Us (${YEAR})`,
   description:
     "Learn who builds and maintains PaycheckLink, why it exists, and the official sources behind every estimate.",
-  alternates: { canonical: "/about" },
+  alternates: { canonical: "/about/" },
 };
 
 export default function AboutPage() {

@@ -1,0 +1,4 @@
+# Fold www onto the canonical apex. Cloudflare Pages copies this into /out.
+https://www.paychecklink.com/* https://paychecklink.com/:splat 301
+http://www.paychecklink.com/* https://paychecklink.com/:splat 301
+http://paychecklink.com/* https://paychecklink.com/:splat 301

@@ -1,9 +1,22 @@
 import { SITE_NAME, YEAR } from "./pages";
 
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://paychecklink.com";
+/** Apex origin with no trailing slash. */
+export const SITE_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL || "https://paychecklink.com"
+).replace(/\/$/, "");
+
+/**
+ * Absolute canonical URL with a trailing slash.
+ * next.config trailingSlash is true, so slashless URLs 308 and GSC
+ * reports them as "Page with redirect" if the sitemap omits the slash.
+ */
+export function pagePath(slug: string): string {
+  const clean = slug.replace(/^\/+|\/+$/g, "");
+  return clean ? `/${clean}/` : "/";
+}
 
 export function buildCanonical(slug: string): string {
-  return slug ? `${SITE_URL}/${slug}` : SITE_URL;
+  return `${SITE_URL}${pagePath(slug)}`;
 }
 
 export function buildSoftwareSchema(title: string, description: string, url: string) {

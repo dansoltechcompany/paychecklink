@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { SITE_URL } from "@/lib/seo/metadata";
+import { buildCanonical } from "@/lib/seo/metadata";
 import { SEO_PAGES, getAllSlugs } from "@/lib/seo/pages";
 
 export const dynamic = "force-static";
@@ -10,37 +10,37 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return [
     {
-      url: SITE_URL,
+      url: buildCanonical(""),
       lastModified: now,
       changeFrequency: "weekly",
       priority: 1,
     },
     {
-      url: `${SITE_URL}/states`,
+      url: buildCanonical("states"),
       lastModified: now,
       changeFrequency: "monthly",
       priority: 0.95,
     },
     {
-      url: `${SITE_URL}/countries`,
+      url: buildCanonical("countries"),
       lastModified: now,
       changeFrequency: "monthly",
       priority: 0.9,
     },
     {
-      url: `${SITE_URL}/methodology`,
+      url: buildCanonical("methodology"),
       lastModified: now,
       changeFrequency: "yearly",
       priority: 0.65,
     },
     {
-      url: `${SITE_URL}/about`,
+      url: buildCanonical("about"),
       lastModified: now,
       changeFrequency: "yearly",
       priority: 0.6,
     },
     {
-      url: `${SITE_URL}/privacy`,
+      url: buildCanonical("privacy"),
       lastModified: now,
       changeFrequency: "yearly",
       priority: 0.55,
@@ -62,7 +62,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
         priority = 0.78;
 
       return {
-        url: `${SITE_URL}/${slug}`,
+        url: buildCanonical(slug),
         lastModified: now,
         changeFrequency: "monthly" as const,
         priority,

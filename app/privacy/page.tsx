@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title: `Privacy Policy (${YEAR})`,
   description:
     "Privacy policy for PaycheckLink (paychecklink.com) and the PaycheckLink Android app, operated by Dansol Tech Pvt. Ltd.",
-  alternates: { canonical: "/privacy" },
+  alternates: { canonical: "/privacy/" },
   robots: { index: true, follow: true },
 };
 
