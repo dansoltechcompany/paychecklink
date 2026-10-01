@@ -37,7 +37,8 @@ describe("canonical URLs match trailingSlash: true", () => {
     assert.ok(slugs.length > 50);
     for (const slug of slugs) {
       const url = buildCanonical(slug);
-      assert.match(url, /^https:\/\/paychecklink\.com\/.*\/$/);
+      assert.match(url, /^https:\/\/paychecklink\.com\//);
+      assert.equal(url.endsWith("/"), true);
       assert.equal(url.includes("www."), false);
     }
     assert.equal(buildCanonical(""), "https://paychecklink.com/");
