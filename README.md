@@ -27,8 +27,8 @@ NEXT_PUBLIC_SITE_URL=https://paychecklink.com
 
 After deploy:
 
-1. Search Console → Sitemaps → resubmit `https://paychecklink.com/sitemap.xml`
-2. Cloudflare → Rules → Redirects: `www.paychecklink.com` → `https://paychecklink.com` (301)
+1. Search Console → Sitemaps → keep the existing `https://paychecklink.com/sitemap.xml` (do not add a second one)
+2. `www.paychecklink.com` is folded onto the apex by `public/_worker.js` (Cloudflare Pages has no Rules screen on the Pages project)
 3. Cloudflare → Scrape Shield: turn **off** Email Address Obfuscation (it creates `/cdn-cgi/l/email-protection` 404s in Search Console)
 
 ## SEO Architecture
